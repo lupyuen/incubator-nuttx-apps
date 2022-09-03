@@ -73,21 +73,45 @@ static void a64_uart_send(int ch)
 }
 
 #ifdef NOTUSED
-PWM 0x01C21400
-
-From [PinePhone Schematic](https://files.pine64.org/doc/PinePhone/PinePhone%20v1.2b%20Released%20Schematic.pdf)...
-
+From PinePhone Schematic: https://files.pine64.org/doc/PinePhone/PinePhone%20v1.2b%20Released%20Schematic.pdf
 -   Backlight Enable: GPIO PH10 (PH10-LCD-BL-EN)
-
 -   Backlight PWM: PWM PL10 (PL10-LCD-PWM)
 
-From [PinePhone Schematic](https://files.pine64.org/doc/PinePhone/PinePhone%20v1.2b%20Released%20Schematic.pdf)...
+Write to PH Configure Register 1 (PH_CFG1_REG)
+Offset: 0x100
 
--   Red LED: GPIO PD18 (PD18-LED-R)
+Bits 10 to 8: PH10_SELECT (Default 0x7)
+000: Input 001: Output
+010: MIC_CLK 011: Reserved
+100: Reserved 101: Reserved
+110: PH_EINT10 111: IO Disable
 
+From PinePhone Schematic: https://files.pine64.org/doc/PinePhone/PinePhone%20v1.2b%20Released%20Schematic.pdf
+-   Red LED:   GPIO PD18 (PD18-LED-R)
 -   Green LED: GPIO PD19 (PD19-LED-G)
+-   Blue LED:  GPIO PD20 (PD20-LED-B)
 
--   Blue LED: GPIO PD20 (PD20-LED-B)
+Write to PD Configure Register 2 (PD_CFG2_REG)
+Offset: 0x74
+
+Bits 18 to 16: PD20_SELECT (Default 0x7)
+000: Input 001: Output
+010: LCD_HSYNC 011: LVDS_VP3
+100: RGMII_TXCTL/MII_TXEN/RMII_TXEN 101: Reserved
+110: Reserved 111: IO Disable
+
+Bits 14 to 12: PD19_SELECT (Default 0x7)
+000: Input 001: Output
+010: LCD_DE 011: LVDS_VNC
+100: RGMII_TXCK/MII_TXCK/RMII_TXCK 101: Reserved
+110: Reserved 111: IO Disable
+
+Bits 10 to 8: PD18_SELECT (Default 0x7)
+000: Input 001: Output
+010: LCD_CLK 011: LVDS_VPC
+100: RGMII_TXD0/MII_TXD0/RMII_TXD0 101: Reserved
+110: Reserved 111: IO Disable
+
 #endif  //  NOTUSED
 
 // TCON0 Base Address for PinePhone Allwinner A64 Display Timing Controller
