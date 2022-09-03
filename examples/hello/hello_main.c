@@ -72,12 +72,31 @@ static void a64_uart_send(int ch)
   *uart_thr = ch;
 }
 
+#ifdef NOTUSED
+PWM 0x01C21400
+
+From [PinePhone Schematic](https://files.pine64.org/doc/PinePhone/PinePhone%20v1.2b%20Released%20Schematic.pdf)...
+
+-   Backlight Enable: GPIO PH10 (PH10-LCD-BL-EN)
+
+-   Backlight PWM: PWM PL10 (PL10-LCD-PWM)
+
+From [PinePhone Schematic](https://files.pine64.org/doc/PinePhone/PinePhone%20v1.2b%20Released%20Schematic.pdf)...
+
+-   Red LED: GPIO PD18 (PD18-LED-R)
+
+-   Green LED: GPIO PD19 (PD19-LED-G)
+
+-   Blue LED: GPIO PD20 (PD20-LED-B)
+#endif  //  NOTUSED
+
 // TCON0 Base Address for PinePhone Allwinner A64 Display Timing Controller
 #define TCON0_BASE_ADDRESS 0x01C0C000
 
 // Test TCON0 PinePhone Allwinner A64 Display Timing Controller
 static void test_tcon0(void)
 {
+  // TODO: Switch on Backlight PWM
   {
     // Write to TCON Global Control Register (TCON_GCTL_REG)
     // Offset: 0x0000
@@ -90,6 +109,20 @@ static void test_tcon0(void)
     // When it’s disabled, the module will be reset to idle state. 
     *tcon_gctl_reg |= (1 << 31);
     printf("tcon_gctl_reg=0x%x\n", *tcon_gctl_reg);
+  }
+  {
+#ifdef NOTUSED
+// Write to TCON FRM Control Register0 (TCON0_FRM_CTL_REG)
+// Offset: 0x0010
+    uint32_t *aaaa = (uint32_t *)
+      (TCON0_BASE_ADDRESS + aaaa);
+
+// Bit 31: TCON0_Frm_En
+// 0:disable
+// 1:enable    
+    *aaaa |= (1 << 31);
+    printf("aaaa=0x%x\n", *aaaa);
+#endif  //  NOTUSED
   }
   {
     // Write to TCON 3D FIFO Register0 (TCON0_3D_FIFO_REG)
@@ -133,6 +166,30 @@ static void test_tcon0(void)
     printf("tcon0_ctl_reg=0x%x\n", *tcon0_ctl_reg);
   }
   {
+#ifdef NOTUSED
+// Write to TCON0 Data Clock Register (TCON0_DCLK_REG)
+// Offset: 0x044
+    uint32_t *aaaa = (uint32_t *)
+      (TCON0_BASE_ADDRESS + aaaa);
+
+// Bits 31 to 28: TCON0_Dclk_En
+// LCLK_EN[3:0] :TCON0 clock enable    
+    *aaaa = 
+      (*aaaa & ~(aaaa << 28))
+      | (aaaa << 28);
+
+// Bits 6 to 0: TCON0_Dclk_Div
+// Tdclk = Tsclk * DCLKDIV
+// Note:
+// 1.if dclk1&dclk2 used，DCLKDIV >=6
+// 2.if dclk only，DCLKDIV >=1
+    *aaaa = 
+      (*aaaa & ~(aaaa << 0))
+      | (aaaa << 0);
+    printf("aaaa=0x%x\n", *aaaa);
+#endif  //  NOTUSED
+  }
+  {
     // Write to TCON0 Basic0 Register (TCON0_BASIC0_REG)
     // Offset: 0x048
     uint32_t *tcon0_basic0_reg = (uint32_t *) 
@@ -150,6 +207,59 @@ static void test_tcon0(void)
       (*tcon0_basic0_reg & ~(0b111111111111 << 0))
       | (99 << 0);
     printf("tcon0_basic0_reg=0x%x\n", *tcon0_basic0_reg);
+  }
+  {
+#ifdef NOTUSED
+// Write to TCON0 CPU Panel Interface Register (TCON0_CPU_IF_REG)
+// Offset: 0x060
+    uint32_t *aaaa = (uint32_t *)
+      (TCON0_BASE_ADDRESS + aaaa);
+
+// Bits 31 to 28: CPU_Mode
+// 0000: 18bit/256K mode
+// 0010: 16bit mode0
+// 0100: 16bit mode1
+// 0110: 16bit mode2
+// 1000: 16bit mode3
+// 1010: 9bit mode
+// 1100: 8bit 256K mode
+// 1110: 8bit 65K mode
+// xxx1: 24bit for DSI    
+    *aaaa = 
+      (*aaaa & ~(aaaa << 28))
+      | (aaaa << 28);
+
+// Bit 3: Trigger_FIFO_Bist_En
+// 0: disable
+// 1: enable
+// Entry addr is 0xFF8
+    *aaaa = 
+      (*aaaa & ~(aaaa << 3))
+      | (aaaa << 3);
+
+// Bit 2: Trigger_FIFO_En
+// 0:enable
+// 1:disable
+    *aaaa = 
+      (*aaaa & ~(aaaa << 2))
+      | (aaaa << 2);
+
+// Bit 1: Trigger_Start
+// write ‘1’ to start a frame flush, write’0’ has no effect.
+// this flag indicated frame flush is running
+// sofeware must make sure write ‘1’ only when this flag is ‘0’.
+    *aaaa = 
+      (*aaaa & ~(aaaa << 1))
+      | (aaaa << 1);
+
+// Bit 0: Trigger_En
+// 0: trigger mode disable
+// 1: trigger mode enable
+    *aaaa = 
+      (*aaaa & ~(aaaa << 0))
+      | (aaaa << 0);
+    printf("aaaa=0x%x\n", *aaaa);
+#endif  //  NOTUSED
   }
   {
     // Write to TCON0 LVDS Panel Interface Register (TCON0_LVDS_IF_REG)
