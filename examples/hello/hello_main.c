@@ -103,7 +103,7 @@ static void test_backlight(void)
   // 110: PH_EINT10 111: IO Disable
   *ph_cfg1_reg = 
     (*ph_cfg1_reg & ~(0b111 << 8))  // Clear the bits
-    | (0b001 << 8);                 // Set the bits
+    | (0b001 << 8);                 // Set the bits for Output
   printf("ph_cfg1_reg=0x%x\n", *ph_cfg1_reg);
 
   // Write to PH Data Register (PH_DATA_REG)
@@ -141,7 +141,7 @@ static void test_led(void)
   // 110: Reserved 111: IO Disable
   *pd_cfg2_reg = 
     (*pd_cfg2_reg & ~(0b111 << 8))  // Clear the bits
-    | (0b001 << 8);                 // Set the bits
+    | (0b001 << 8);                 // Set the bits for Output
 
   // Bits 14 to 12: PD19_SELECT (Default 0x7)
   // 000: Input    001: Output
@@ -150,7 +150,7 @@ static void test_led(void)
   // 110: Reserved 111: IO Disable
   *pd_cfg2_reg = 
     (*pd_cfg2_reg & ~(0b111 << 12))  // Clear the bits
-    | (0b001 << 12);                 // Set the bits
+    | (0b001 << 12);                 // Set the bits for Output
 
   // Bits 18 to 16: PD20_SELECT (Default 0x7)
   // 000: Input     001: Output
@@ -159,7 +159,7 @@ static void test_led(void)
   // 110: Reserved  111: IO Disable
   *pd_cfg2_reg = 
     (*pd_cfg2_reg & ~(0b111 << 16))  // Clear the bits
-    | (0b001 << 16);                 // Set the bits
+    | (0b001 << 16);                 // Set the bits for Output
   printf("pd_cfg2_reg=0x%x\n", *pd_cfg2_reg);
 
   // Write to PD Data Register (PD_DATA_REG)
