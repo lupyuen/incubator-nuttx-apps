@@ -1863,7 +1863,7 @@ int FS_memInput(int address)
 {
   ////  Return the 32-bit word at the specified address.
   ////  TODO: Quit if address is invalid.
-  return *(int *) address;
+  return *(int *)(uint64_t) address;
 
   ////  Previously:
   ////  FS_errmsg = _("Direct memory access not available");
@@ -1880,7 +1880,7 @@ int FS_memOutput(int address, int value)
 {
   ////  Set the 32-bit word at the specified address
   ////  TODO: Quit if address is invalid.
-  *(int *) address = value;
+  *(int *)(uint64_t) address = value;
   return 0;
 
   ////  Previously:
