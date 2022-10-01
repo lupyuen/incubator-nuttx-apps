@@ -28,7 +28,6 @@
 static void a64_uart_send(int ch);
 static void test_backlight(void);
 static void test_led(void);
-static void test_tcon0(void);
 
 /****************************************************************************
  * Public Functions
@@ -50,9 +49,6 @@ int main(int argc, FAR char *argv[])
 
   // Turn on the PinePhone Red, Green and Blue LEDs
   test_led();
-
-  // Test TCON0 PinePhone Allwinner A64 Display Timing Controller
-  test_tcon0();
 
   // Make sure we can still write to A64 I/O Registers  
   a64_uart_send('B');
@@ -178,6 +174,7 @@ static void test_led(void)
   printf("pd_data_reg=0x%x\n", *pd_data_reg);
 }
 
+#ifdef NOTUSED
 // TCON0 Base Address for PinePhone Allwinner A64 Display Timing Controller
 #define TCON0_BASE_ADDRESS 0x01C0C000
 
@@ -376,3 +373,4 @@ static void test_tcon0(void)
       | i;
   }
 }
+#endif  //  NOTUSED
