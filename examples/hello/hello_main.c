@@ -28,6 +28,7 @@
 static void a64_uart_send(int ch);
 static void test_backlight(void);
 static void test_led(void);
+static void test_display(void);
 
 /****************************************************************************
  * Public Functions
@@ -52,6 +53,9 @@ int main(int argc, FAR char *argv[])
 
   // Make sure we can still write to A64 I/O Registers  
   a64_uart_send('B');
+
+  // Test the display
+  test_display(); ////
   return 0;
 }
 
@@ -374,3 +378,6 @@ static void test_tcon0(void)
   }
 }
 #endif  //  NOTUSED
+
+////#warning Test Display ////
+#include "../../test_display.c" ////
