@@ -29,6 +29,7 @@ static void a64_uart_send(int ch);
 static void test_backlight(void);
 static void test_led(void);
 static void test_display(void);
+void test_zig(void);
 
 /****************************************************************************
  * Public Functions
@@ -55,7 +56,10 @@ int main(int argc, FAR char *argv[])
   a64_uart_send('B');
 
   // Test the display
-  test_display(); ////
+  test_display();
+
+  // Test Zig App
+  test_zig();
   return 0;
 }
 
