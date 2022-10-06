@@ -52,6 +52,7 @@ void dump_buffer(const u8 *data, size_t len)
 	printf("\n");
 }
 
+#ifdef NOTUSED
 /// From CRC-16-CCITT (x^16 + x^12 + x^5 + 1)
 static const uint16_t crc16ccitt_tab[256] = 
 {
@@ -181,3 +182,4 @@ uint16_t crc16ccitt(FAR const uint8_t *src, size_t len)
 {
   return crc16ccitt_part(src, len, 0xffff);
 }
+#endif  //  NOTUSED
