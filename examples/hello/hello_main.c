@@ -385,3 +385,12 @@ static void test_tcon0(void)
 
 ////#warning Test Display ////
 #include "../../test_display.c" ////
+
+void dump_buffer(const u8 *data, size_t len)
+{
+	for (int i = 0; i < len; i++) {
+		printf("%02x ", data[i]);
+		if ((i + 1) % 8 == 0) { printf("\n"); }
+	}
+	printf("\n");
+}
