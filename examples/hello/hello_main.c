@@ -53,7 +53,7 @@ void dump_buffer(const u8 *data, size_t len)
 }
 
 /// From CRC-16-CCITT (x^16 + x^12 + x^5 + 1)
-static const uint16_t crctab16[256] = 
+static const uint16_t crc16ccitt_tab[256] = 
 {
     0x0000, 0x1189, 0x2312, 0x329b, 0x4624, 0x57ad, 0x6536, 0x74bf,
     0x8c48, 0x9dc1, 0xaf5a, 0xbed3, 0xca6c, 0xdbe5, 0xe97e, 0xf8f7,
@@ -126,7 +126,7 @@ static u16 const NOTUSED_crc_ccitt_table[256] = {
 
 static inline u16 crc_ccitt_byte(u16 crc, const u8 c)
 {
-	return (crc >> 8) ^ crctab16[(crc ^ c) & 0xff];
+	return (crc >> 8) ^ crc16ccitt_tab[(crc ^ c) & 0xff];
 }
 
 static u16 crc_ccitt(u16 crc, u8 const *buffer, size_t len)
@@ -141,7 +141,43 @@ u16 sun6i_dsi_crc_compute(u8 const *buffer, size_t len)
 {
   for (int i = 0; i < 256; i++) {
     printf("%d\n", i);
-    assert(crctab16[i] == NOTUSED_crc_ccitt_table[i]);
+    assert(crc16ccitt_tab[i] == NOTUSED_crc_ccitt_table[i]);
   }
   return crc_ccitt(0xffff, buffer, len);
+}
+
+/************************************************************************************************
+ * Name: crc16part
+ *
+ * Description:
+ *   Continue CRC calculation on a part of the buffer.
+ *
+ ************************************************************************************************/
+
+/// Based on nuttx/libs/libc/misc/lib_crc16.c
+uint16_t crc16ccitt_part(FAR const uint8_t *src, size_t len, uint16_t crc16val)
+{
+  size_t i;
+
+  for (i = 0; i < len; i++)
+    {
+      crc16val = (crc16val >> 8)
+        ^ crc16ccitt_tab[(crc16val ^ src[i]) & 0xff];
+    }
+
+  return crc16val;
+}
+
+/************************************************************************************************
+ * Name: crc16
+ *
+ * Description:
+ *   Return a 16-bit CRC of the contents of the 'src' buffer, length 'len'
+ *
+ ************************************************************************************************/
+
+/// Based on nuttx/libs/libc/misc/lib_crc16.c
+uint16_t crc16ccitt(FAR const uint8_t *src, size_t len)
+{
+  return crc16ccitt_part(src, len, 0xffff);
 }
