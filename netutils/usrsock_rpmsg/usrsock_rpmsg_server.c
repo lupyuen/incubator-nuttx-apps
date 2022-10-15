@@ -446,7 +446,6 @@ static int usrsock_rpmsg_sendto_handler(struct rpmsg_endpoint *ept,
     }
 
 out:
-
   if (ret > 0 &&
       usrsock_rpmsg_available(&priv->socks[req->usockid], FIONSPACE))
     {
@@ -942,7 +941,7 @@ static int usrsock_rpmsg_prepare_poll(struct usrsock_rpmsg_s *priv,
       if (priv->pfds[i].ptr)
         {
           pfds[count] = priv->pfds[i];
-          pfds[count++].events |= POLLERR | POLLHUP | POLLSOCK;
+          pfds[count++].events |= POLLSOCK;
         }
     }
 
