@@ -128,7 +128,8 @@ endef
 define ELFCOMPILEZIG
 	@echo "ZIG: $1"
 	# Remove target suffix here since zig compiler add .o automatically
-	$(Q) $(ZIG) build-obj $(ZIGELFFLAGS) $($(strip $1)_ZIGELFFLAGS) --name $(basename $2) $1 
+	# Previously: $(Q) $(ZIG) build-obj $(ZIGELFFLAGS) $($(strip $1)_ZIGELFFLAGS) --name $(basename $2) $1 
+	$(Q) zig build-obj $(ZIGELFFLAGS) $($(strip $1)_ZIGELFFLAGS) --name $(basename $2) $1 
 endef
 
 define ELFLD
