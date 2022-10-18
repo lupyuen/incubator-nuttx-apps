@@ -191,8 +191,9 @@ struct device {};
 ssize_t nuttx_mipi_dsi_dcs_write(const struct device *dev, uint8_t channel,
   uint8_t cmd, const void *buf, size_t len);
 
-// Test PinePhone Display
-#include "../../test_display.c"
+// Test PinePhone Display:
+// https://github.com/lupyuen/pinephone-nuttx/blob/main/test_display.c
+#include "../../pinephone-nuttx/test_display.c"
 
 // Dump the buffer
 void dump_buffer(const u8 *data, size_t len)
