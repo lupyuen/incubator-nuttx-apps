@@ -139,6 +139,18 @@ void *display_zalloc(size_t size) {
 #include "../../p-boot/src/pmic.c"
 #include "../../p-boot/src/display.c"
 
+/// Max Iterations for Mandlebrot Set
+#define MAX_ITER 80
+
+/// Mandlebrow Plot Window
+#define RE_START -2
+#define RE_END 1
+#define IM_START -1
+#define IM_END 1
+
+/// Compute Mandelbrot Set
+static int mandelbrot(float cx, float cy);
+
 /// Render a Test Pattern on PinePhone's Display.
 /// Calls Allwinner A64 Display Engine, Timing Controller and MIPI Display Serial Interface.
 /// Based on https://megous.com/git/p-boot/tree/src/dtest.c#n221
@@ -158,19 +170,41 @@ static void test_display(void) {
 	// Fullscreen 720 x 1440 (4 bytes per RGBA pixel)
     static uint32_t fb0[720 * 1440];
 	int fb0_len = sizeof(fb0) / sizeof(fb0[0]);
-    for (int i = 0; i < fb0_len; i++) {
-		// Colours are in ARGB format
-		if (i < fb0_len / 4) {
-			// Blue
-        	fb0[i] = 0x80000080;
-		} else if (i < fb0_len / 2) {
-			// Green
-        	fb0[i] = 0x80008000;
-		} else {
-			// Red
-        	fb0[i] = 0x80800000;
+	for (int y = 0; y < 1440; y++) {
+		for (int x = 0; x < 720; x++) {
+			// Convert Pixel Coordinates to a Complex Number
+        	float cx = RE_START + (x / 720.0)  * (RE_END - RE_START);
+			float cy = IM_START + (y / 1440.0) * (IM_END - IM_START);
+
+			// Compute Manelbrot Set
+        	int m = mandelbrot(cx, cy);
+
+	        // Color depends on the number of iterations
+        	int color = 255 - (m * 255.0 / MAX_ITER);
+
+			// Set the Pixel Colour (ARGB Format)
+			int p = (y * 720) + x;
+			assert(p < fb0_len);
+			fb0[p] = 0x80000000
+				| (color << 16)
+				| (color << 8)
+				| (color << 0);
 		}
-    }
+	}
+
+    // for (int i = 0; i < fb0_len; i++) {
+	// 	// Colours are in ARGB format
+	// 	if (i < fb0_len / 4) {
+	// 		// Blue
+    //     	fb0[i] = 0x80000080;
+	// 	} else if (i < fb0_len / 2) {
+	// 		// Green
+    //     	fb0[i] = 0x80008000;
+	// 	} else {
+	// 		// Red
+    //     	fb0[i] = 0x80800000;
+	// 	}
+    // }
 
 	// Init Framebuffer 1:
 	// Box 600 x 600 (4 bytes per RGBA pixel)
@@ -233,4 +267,22 @@ static void test_display(void) {
 
 	// Render the Display Planes
 	display_commit(d);
+}
+
+// Compute Mandelbrot Set. Based on https://www.codingame.com/playgrounds/2358/how-to-plot-the-mandelbrot-set/mandelbrot-set
+static int mandelbrot(float cx, float cy) {
+	// z = 0
+    float zx = 0;
+	float zy = 0;
+    int n = 0;
+	// abs(z) <= 2 and n < Max Iterations
+    while (zx*zx + zy*zy <= 4 && n < 80) {
+		// z = z*z + c
+		float mx = zx*zx - zy*zy;
+		float my = zx*zy + zy*zx;
+		zx = mx + cx;
+		zy = my + cy;
+        n += 1;
+	}
+    return n;
 }
