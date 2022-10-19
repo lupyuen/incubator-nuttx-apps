@@ -143,11 +143,6 @@ void *display_zalloc(size_t size) {
 /// Calls Allwinner A64 Display Engine, Timing Controller and MIPI Display Serial Interface.
 /// Based on https://megous.com/git/p-boot/tree/src/dtest.c#n221
 static void test_display(void) {
-    // Allocate display
-    static struct display disp;
-    memset(&disp, 0, sizeof(disp));
-    struct display* d = &disp;
-
 	// Init PMIC
 	pmic_init();
 	udelay(500);
@@ -198,6 +193,11 @@ static void test_display(void) {
         	fb2[i] = 0x80808080;
 		}
     }
+
+    // Allocate 3 Display Planes
+    static struct display disp;
+    memset(&disp, 0, sizeof(disp));
+    struct display *d = &disp;
 
 	// Init Display Plane 0: (Base Plane)
 	// Fullscreen 720 x 1440
