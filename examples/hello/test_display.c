@@ -164,12 +164,16 @@ static void test_display(void) {
     static uint32_t fb0[720 * 1440];
 	int fb0_len = sizeof(fb0) / sizeof(fb0[0]);
     for (int i = 0; i < fb0_len; i++) {
+		// Colours are in ABGR format
 		if (i < fb0_len / 4) {
+			// Red
         	fb0[i] = 0x80000080;
 		} else if (i < fb0_len / 2) {
-        	fb0[i] = 0x00800080;
+			// Green
+        	fb0[i] = 0x80008000;
 		} else {
-        	fb0[i] = 0x00008080;
+			// Blue
+        	fb0[i] = 0x80800000;
 		}
     }
 
