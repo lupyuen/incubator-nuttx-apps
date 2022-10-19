@@ -170,11 +170,13 @@ static void test_display(void) {
 	// Fullscreen 720 x 1440 (4 bytes per RGBA pixel)
     static uint32_t fb0[720 * 1440];
 	int fb0_len = sizeof(fb0) / sizeof(fb0[0]);
+
+	// Fill with Mandelbrot Set
 	for (int y = 0; y < 1440; y++) {
 		for (int x = 0; x < 720; x++) {
 			// Convert Pixel Coordinates to a Complex Number
-        	float cx = RE_START + (x / 720.0)  * (RE_END - RE_START);
-			float cy = IM_START + (y / 1440.0) * (IM_END - IM_START);
+        	float cx = RE_START + (y / 1440.0) * (RE_END - RE_START);
+			float cy = IM_START + (x / 720.0)  * (IM_END - IM_START);
 
 			// Compute Manelbrot Set
         	int m = mandelbrot(cx, cy);
@@ -192,6 +194,7 @@ static void test_display(void) {
 		}
 	}
 
+	// Fill screen with Blue, Green and Red
     // for (int i = 0; i < fb0_len; i++) {
 	// 	// Colours are in ARGB format
 	// 	if (i < fb0_len / 4) {
@@ -244,7 +247,7 @@ static void test_display(void) {
 
 	// Init Display Plane 1: (First Overlay)
 	// Box 600 x 600
-	d->planes[1].fb_start = (uintptr_t) fb1;  // Framebuffer
+	d->planes[1].fb_start = 0; //// (uintptr_t) fb1;  // Framebuffer
 	d->planes[1].fb_pitch = 600 * 4;  // Framebuffer Pitch
 	d->planes[1].src_w    = 600;  // Source Width
 	d->planes[1].src_h    = 600;  // Source Height
@@ -255,7 +258,7 @@ static void test_display(void) {
 
 	// Init Display Plane 2: (Second Overlay)
 	// Fullscreen 720 x 1440 with Alpha Blending
-	d->planes[2].fb_start = (uintptr_t) fb2;  // Framebuffer
+	d->planes[2].fb_start = 0; //// (uintptr_t) fb2;  // Framebuffer
 	d->planes[2].fb_pitch = 720 * 4;  // Framebuffer Pitch
 	d->planes[2].src_w    = 720;   // Source Width
 	d->planes[2].src_h    = 1440;  // Source Height
