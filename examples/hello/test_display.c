@@ -192,8 +192,10 @@ static void test_display(void) {
 	int fb2_len = sizeof(fb2) / sizeof(fb2[0]);
     for (int i = 0; i < fb2_len; i++) {
 		// Colours are in ARGB format
-		if (i > fb2_len / 2) {
-        	fb2[i] = i;
+		if (i < fb2_len * 0.75) {
+        	fb2[i] = 0x00000000;
+		} else {
+        	fb2[i] = 0x80808080;
 		}
     }
 
@@ -219,7 +221,7 @@ static void test_display(void) {
 
 	// Init Display Plane 2: (Second Overlay)
 	// Fullscreen 720 x 1440 with Alpha Blending
-	d->planes[2].fb_start = 0; //// (uintptr_t) fb2;  // Framebuffer
+	d->planes[2].fb_start = (uintptr_t) fb2;  // Framebuffer
 	d->planes[2].fb_pitch = 720 * 4;  // Framebuffer Pitch
 	d->planes[2].src_w    = 720;   // Source Width
 	d->planes[2].src_h    = 1440;  // Source Height
