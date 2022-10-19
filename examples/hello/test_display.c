@@ -164,7 +164,7 @@ static void test_display(void) {
     static uint32_t fb0[720 * 1440];
 	int fb0_len = sizeof(fb0) / sizeof(fb0[0]);
     for (int i = 0; i < fb0_len; i++) {
-		// Colours are in ABGR format
+		// Colours are in ABGR format (Reverse of RGBA)
 		if (i < fb0_len / 4) {
 			// Red
         	fb0[i] = 0x80000080;
@@ -182,7 +182,8 @@ static void test_display(void) {
     static uint32_t fb1[600 * 600];
 	int fb1_len = sizeof(fb1) / sizeof(fb1[0]);
     for (int i = 0; i < fb1_len; i++) {
-        fb1[i] = 0x00800080;
+		// Colours are in ABGR format (Reverse of RGBA)
+        fb1[i] = 0x80000000 | i;
     }
 
 	// Init Framebuffer 2:
@@ -190,6 +191,7 @@ static void test_display(void) {
     static uint32_t fb2[720 * 1440];
 	int fb2_len = sizeof(fb2) / sizeof(fb2[0]);
     for (int i = 0; i < fb2_len; i++) {
+		// Colours are in ABGR format (Reverse of RGBA)
 		if (i > fb2_len / 2) {
         	fb2[i] = i;
 		}
@@ -206,7 +208,7 @@ static void test_display(void) {
 
 	// Init Display Plane 1: (First Overlay)
 	// Box 600 x 600
-	d->planes[1].fb_start = 0; //// (uintptr_t) fb1;  // Framebuffer
+	d->planes[1].fb_start = (uintptr_t) fb1;  // Framebuffer
 	d->planes[1].fb_pitch = 600 * 4;  // Framebuffer Pitch
 	d->planes[1].src_w    = 600;  // Source Width
 	d->planes[1].src_h    = 600;  // Source Height
