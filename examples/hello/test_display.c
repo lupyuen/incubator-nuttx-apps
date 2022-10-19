@@ -161,22 +161,22 @@ static void test_display(void) {
 
 	// Init Framebuffer 0:
 	// Fullscreen 720 x 1440 (4 bytes per RGBA pixel)
-    static uint8_t fb0[720 * 1440 * 4];
-    for (int i = 0; i < sizeof(fb0); i++) {
-        fb0[i] = 0x55;
+    static uint32_t fb0[720 * 1440];
+    for (int i = 0; i < sizeof(fb0) / 4; i++) {
+        fb0[i] = 0x80000080;
     }
 
 	// Init Framebuffer 1:
 	// Box 600 x 600 (4 bytes per RGBA pixel)
-    static uint8_t fb1[600 * 600 * 4];
-    for (int i = 0; i < sizeof(fb1); i++) {
-        fb1[i] = 0x88;
+    static uint32_t fb1[600 * 600];
+    for (int i = 0; i < sizeof(fb1) / 4; i++) {
+        fb1[i] = 0x00800080;
     }
 
 	// Init Framebuffer 2:
 	// Fullscreen 720 x 1440 (4 bytes per RGBA pixel)
-    static uint8_t fb2[720 * 1440 * 4];
-    for (int i = 0; i < sizeof(fb2); i++) {
+    static uint32_t fb2[720 * 1440];
+    for (int i = 0; i < sizeof(fb2) / 4; i++) {
 		if (i > sizeof(fb2) / 2) {
         	fb2[i] = i;
 		}
@@ -212,7 +212,7 @@ static void test_display(void) {
 	d->planes[2].dst_h    = 1440;  // Dest Height
 	d->planes[2].dst_x    = 0;     // Dest X
 	d->planes[2].dst_y    = 0;     // Dest Y
-	d->planes[2].alpha    = 255;   // Dest Alpha
+	d->planes[2].alpha    = 128;   // Dest Alpha
 
 	// Render the Display Planes
 	display_commit(d);
