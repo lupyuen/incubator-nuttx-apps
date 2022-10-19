@@ -143,10 +143,10 @@ void *display_zalloc(size_t size) {
 #define MAX_ITER 80
 
 /// Mandlebrow Plot Window
-#define RE_START -2
-#define RE_END 1
-#define IM_START -1
-#define IM_END 1
+float RE_START = -2;
+float RE_END = 1;
+float IM_START = -1;
+float IM_END = 1;
 
 /// Functions for Mandlebrot Set and Colour Conversion
 static int mandelbrot(float cx, float cy);
@@ -277,6 +277,41 @@ static void test_display(void) {
 
     // Render the Display Layers
     display_commit(d);
+
+    // Update forever...
+    for (;;) {
+        // Fill with Mandelbrot Set
+        for (int y = 0; y < 1440; y++) {
+            for (int x = 0; x < 720; x++) {
+                // Convert Pixel Coordinates to a Complex Number
+                float cx = RE_START + (y / 1440.0) * (RE_END - RE_START);
+                float cy = IM_START + (x / 720.0)  * (IM_END - IM_START);
+
+                // Compute Manelbrot Set
+                int m = mandelbrot(cx, cy);
+
+                // Color depends on the number of iterations
+                uint8_t hue = 255.0 * m / MAX_ITER;
+                uint8_t saturation = 255;
+                uint8_t value = (m < MAX_ITER) ? 255 : 0;
+
+                // Convert Hue / Saturation / Value to RGB
+                uint32_t rgb = hsvToRgb(hue, saturation, value);
+
+                // Set the Pixel Colour (ARGB Format)
+                int p = (y * 720) + x;
+                assert(p < fb0_len);
+                fb0[p] = 0x80000000 | rgb;
+            }
+        }
+        // Zoom in to (-1.4, 0)
+        float RE_DEST = -1.4;
+        float IM_DEST = 0;
+        RE_START += (RE_DEST - RE_START) * 0.05;
+        RE_END   -= (RE_END  - RE_DEST)  * 0.05;
+        IM_START += (IM_DEST - IM_START) * 0.05;
+        IM_END   -= (IM_END  - IM_DEST)  * 0.05;
+    }
 }
 
 // Compute Mandelbrot Set. Based on https://www.codingame.com/playgrounds/2358/how-to-plot-the-mandelbrot-set/mandelbrot-set
