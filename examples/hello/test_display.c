@@ -234,12 +234,12 @@ static void test_display(void) {
         }
     }
 
-    // Allocate 3 Display Planes
+    // Allocate 3 Display Layers
     static struct display disp;
     memset(&disp, 0, sizeof(disp));
     struct display *d = &disp;
 
-    // Init Display Plane 0: (Base Plane)
+    // Init Display Layer 0: (Base Layer)
     // Fullscreen 720 x 1440
     d->planes[0].fb_start = (uintptr_t) fb0;  // Framebuffer Address
     d->planes[0].fb_pitch = 720 * 4;  // Framebuffer Pitch
@@ -248,30 +248,34 @@ static void test_display(void) {
     d->planes[0].dst_w    = 720;   // Dest Width
     d->planes[0].dst_h    = 1440;  // Dest Height
 
-    // Init Display Plane 1: (First Overlay)
+    // Init Display Layer 1: (First Overlay)
     // Box 600 x 600
-    d->planes[1].fb_start = 0; //// (uintptr_t) fb1;  // Framebuffer Address
-    d->planes[1].fb_pitch = 600 * 4;  // Framebuffer Pitch
-    d->planes[1].src_w    = 600;  // Source Width
-    d->planes[1].src_h    = 600;  // Source Height
-    d->planes[1].dst_w    = 600;  // Dest Width
-    d->planes[1].dst_h    = 600;  // Dest Height
-    d->planes[1].dst_x    = 52;   // Dest X
-    d->planes[1].dst_y    = 52;   // Dest Y
+    d->planes[1].fb_start = 0; // Layer Disabled
+    // Enable the Layer:
+    // d->planes[1].fb_start = (uintptr_t) fb1;  // Framebuffer Address
+    // d->planes[1].fb_pitch = 600 * 4;  // Framebuffer Pitch
+    // d->planes[1].src_w    = 600;  // Source Width
+    // d->planes[1].src_h    = 600;  // Source Height
+    // d->planes[1].dst_w    = 600;  // Dest Width
+    // d->planes[1].dst_h    = 600;  // Dest Height
+    // d->planes[1].dst_x    = 52;   // Dest X
+    // d->planes[1].dst_y    = 52;   // Dest Y
 
-    // Init Display Plane 2: (Second Overlay)
+    // Init Display Layer 2: (Second Overlay)
     // Fullscreen 720 x 1440 with Alpha Blending
-    d->planes[2].fb_start = 0; //// (uintptr_t) fb2;  // Framebuffer Address
-    d->planes[2].fb_pitch = 720 * 4;  // Framebuffer Pitch
-    d->planes[2].src_w    = 720;   // Source Width
-    d->planes[2].src_h    = 1440;  // Source Height
-    d->planes[2].dst_w    = 720;   // Dest Width
-    d->planes[2].dst_h    = 1440;  // Dest Height
-    d->planes[2].dst_x    = 0;     // Dest X
-    d->planes[2].dst_y    = 0;     // Dest Y
-    d->planes[2].alpha    = 128;   // Dest Alpha
+    d->planes[2].fb_start = 0; // Layer Disabled
+    // Enable the Layer:
+    // d->planes[2].fb_start = (uintptr_t) fb2;  // Framebuffer Address
+    // d->planes[2].fb_pitch = 720 * 4;  // Framebuffer Pitch
+    // d->planes[2].src_w    = 720;   // Source Width
+    // d->planes[2].src_h    = 1440;  // Source Height
+    // d->planes[2].dst_w    = 720;   // Dest Width
+    // d->planes[2].dst_h    = 1440;  // Dest Height
+    // d->planes[2].dst_x    = 0;     // Dest X
+    // d->planes[2].dst_y    = 0;     // Dest Y
+    // d->planes[2].alpha    = 128;   // Dest Alpha
 
-    // Render the Display Planes
+    // Render the Display Layers
     display_commit(d);
 }
 
