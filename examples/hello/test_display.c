@@ -66,10 +66,10 @@
 #define udelay(us) usleep(us)
 
 #define min(x, y) (				\
-	(x) < (y) ? (x) : (y) )
+    (x) < (y) ? (x) : (y) )
 
 #define max(x, y) (				\
-	(x) > (y) ? (x) : (y) )
+    (x) > (y) ? (x) : (y) )
 
 /// TODO: Implement barriers. From p-boot/src/uboot/arch/arm/include/asm/io.h
 /// #define mb()		dsb()
@@ -156,82 +156,82 @@ static uint32_t hsvToRgb(uint8_t h, uint8_t s, uint8_t v);
 /// Calls Allwinner A64 Display Engine, Timing Controller and MIPI Display Serial Interface.
 /// Based on https://megous.com/git/p-boot/tree/src/dtest.c#n221
 static void test_display(void) {
-	// Init PMIC
-	pmic_init();
-	udelay(500);
+    // Init PMIC
+    pmic_init();
+    udelay(500);
 
-	// Init Display
-	display_init();
-	udelay(160000);
+    // Init Display
+    display_init();
+    udelay(160000);
 
-	// Enable Backlight
-	backlight_enable(90);
+    // Enable Backlight
+    backlight_enable(90);
 
-	// Init Framebuffer 0:
-	// Fullscreen 720 x 1440 (4 bytes per RGBA pixel)
+    // Init Framebuffer 0:
+    // Fullscreen 720 x 1440 (4 bytes per RGBA pixel)
     static uint32_t fb0[720 * 1440];
-	int fb0_len = sizeof(fb0) / sizeof(fb0[0]);
+    int fb0_len = sizeof(fb0) / sizeof(fb0[0]);
 
-	// Fill with Mandelbrot Set
-	for (int y = 0; y < 1440; y++) {
-		for (int x = 0; x < 720; x++) {
-			// Convert Pixel Coordinates to a Complex Number
-        	float cx = RE_START + (y / 1440.0) * (RE_END - RE_START);
-			float cy = IM_START + (x / 720.0)  * (IM_END - IM_START);
+    // Fill with Mandelbrot Set
+    for (int y = 0; y < 1440; y++) {
+        for (int x = 0; x < 720; x++) {
+            // Convert Pixel Coordinates to a Complex Number
+            float cx = RE_START + (y / 1440.0) * (RE_END - RE_START);
+            float cy = IM_START + (x / 720.0)  * (IM_END - IM_START);
 
-			// Compute Manelbrot Set
-        	int m = mandelbrot(cx, cy);
+            // Compute Manelbrot Set
+            int m = mandelbrot(cx, cy);
 
-	        // Color depends on the number of iterations
-        	uint8_t hue = 255.0 * m / MAX_ITER;
-        	uint8_t saturation = 255;
-        	uint8_t value = (m < MAX_ITER) ? 255 : 0;
+            // Color depends on the number of iterations
+            uint8_t hue = 255.0 * m / MAX_ITER;
+            uint8_t saturation = 255;
+            uint8_t value = (m < MAX_ITER) ? 255 : 0;
 
-			// Convert Hue / Saturation / Value to RGB
-			uint32_t rgb = hsvToRgb(hue, saturation, value);
+            // Convert Hue / Saturation / Value to RGB
+            uint32_t rgb = hsvToRgb(hue, saturation, value);
 
-			// Set the Pixel Colour (ARGB Format)
-			int p = (y * 720) + x;
-			assert(p < fb0_len);
-			fb0[p] = 0x80000000 | rgb;
-		}
-	}
+            // Set the Pixel Colour (ARGB Format)
+            int p = (y * 720) + x;
+            assert(p < fb0_len);
+            fb0[p] = 0x80000000 | rgb;
+        }
+    }
 
-	// Fill screen with Blue, Green and Red
+    // Fill screen with Blue, Green and Red
     // for (int i = 0; i < fb0_len; i++) {
-	// 	// Colours are in ARGB format
-	// 	if (i < fb0_len / 4) {
-	// 		// Blue for top quarter
+    // 	// Colours are in ARGB format
+    // 	if (i < fb0_len / 4) {
+    // 		// Blue for top quarter
     //     	fb0[i] = 0x80000080;
-	// 	} else if (i < fb0_len / 2) {
-	// 		// Green for next quarter
+    // 	} else if (i < fb0_len / 2) {
+    // 		// Green for next quarter
     //     	fb0[i] = 0x80008000;
-	// 	} else {
-	// 		// Red for lower half
+    // 	} else {
+    // 		// Red for lower half
     //     	fb0[i] = 0x80800000;
-	// 	}
+    // 	}
     // }
 
-	// Init Framebuffer 1:
-	// Box 600 x 600 (4 bytes per RGBA pixel)
+    // Init Framebuffer 1:
+    // Box 600 x 600 (4 bytes per RGBA pixel)
     static uint32_t fb1[600 * 600];
-	int fb1_len = sizeof(fb1) / sizeof(fb1[0]);
+    int fb1_len = sizeof(fb1) / sizeof(fb1[0]);
     for (int i = 0; i < fb1_len; i++) {
-		// Colours are in ARGB format
+        // Colours are in ARGB format
         fb1[i] = 0x80000000 | i;
     }
 
-	// Init Framebuffer 2:
-	// Fullscreen 720 x 1440 (4 bytes per RGBA pixel)
+    // Init Framebuffer 2:
+    // Fullscreen 720 x 1440 (4 bytes per RGBA pixel)
     static uint32_t fb2[720 * 1440];
-	int fb2_len = sizeof(fb2) / sizeof(fb2[0]);
+    int fb2_len = sizeof(fb2) / sizeof(fb2[0]);
     for (int i = 0; i < fb2_len; i++) {
-		// Colours are in ARGB format
-		if (i < fb2_len * 0.75) {
-        	fb2[i] = 0x00000000;
-		} else {
-        	fb2[i] = 0x80808080;
-		}
+        // Colours are in ARGB format
+        if (i < fb2_len * 0.75) {
+            fb2[i] = 0x00000000;
+        } else {
+            fb2[i] = 0x80808080;
+        }
     }
 
     // Allocate 3 Display Planes
@@ -239,136 +239,136 @@ static void test_display(void) {
     memset(&disp, 0, sizeof(disp));
     struct display *d = &disp;
 
-	// Init Display Plane 0: (Base Plane)
-	// Fullscreen 720 x 1440
-	d->planes[0].fb_start = (uintptr_t) fb0;  // Framebuffer
-	d->planes[0].fb_pitch = 720 * 4;  // Framebuffer Pitch
-	d->planes[0].src_w    = 720;   // Source Width
-	d->planes[0].src_h    = 1440;  // Source Height
-	d->planes[0].dst_w    = 720;   // Dest Width
-	d->planes[0].dst_h    = 1440;  // Dest Height
+    // Init Display Plane 0: (Base Plane)
+    // Fullscreen 720 x 1440
+    d->planes[0].fb_start = (uintptr_t) fb0;  // Framebuffer
+    d->planes[0].fb_pitch = 720 * 4;  // Framebuffer Pitch
+    d->planes[0].src_w    = 720;   // Source Width
+    d->planes[0].src_h    = 1440;  // Source Height
+    d->planes[0].dst_w    = 720;   // Dest Width
+    d->planes[0].dst_h    = 1440;  // Dest Height
 
-	// Init Display Plane 1: (First Overlay)
-	// Box 600 x 600
-	d->planes[1].fb_start = 0; //// (uintptr_t) fb1;  // Framebuffer
-	d->planes[1].fb_pitch = 600 * 4;  // Framebuffer Pitch
-	d->planes[1].src_w    = 600;  // Source Width
-	d->planes[1].src_h    = 600;  // Source Height
-	d->planes[1].dst_w    = 600;  // Dest Width
-	d->planes[1].dst_h    = 600;  // Dest Height
-	d->planes[1].dst_x    = 52;   // Dest X
-	d->planes[1].dst_y    = 52;   // Dest Y
+    // Init Display Plane 1: (First Overlay)
+    // Box 600 x 600
+    d->planes[1].fb_start = 0; //// (uintptr_t) fb1;  // Framebuffer
+    d->planes[1].fb_pitch = 600 * 4;  // Framebuffer Pitch
+    d->planes[1].src_w    = 600;  // Source Width
+    d->planes[1].src_h    = 600;  // Source Height
+    d->planes[1].dst_w    = 600;  // Dest Width
+    d->planes[1].dst_h    = 600;  // Dest Height
+    d->planes[1].dst_x    = 52;   // Dest X
+    d->planes[1].dst_y    = 52;   // Dest Y
 
-	// Init Display Plane 2: (Second Overlay)
-	// Fullscreen 720 x 1440 with Alpha Blending
-	d->planes[2].fb_start = 0; //// (uintptr_t) fb2;  // Framebuffer
-	d->planes[2].fb_pitch = 720 * 4;  // Framebuffer Pitch
-	d->planes[2].src_w    = 720;   // Source Width
-	d->planes[2].src_h    = 1440;  // Source Height
-	d->planes[2].dst_w    = 720;   // Dest Width
-	d->planes[2].dst_h    = 1440;  // Dest Height
-	d->planes[2].dst_x    = 0;     // Dest X
-	d->planes[2].dst_y    = 0;     // Dest Y
-	d->planes[2].alpha    = 128;   // Dest Alpha
+    // Init Display Plane 2: (Second Overlay)
+    // Fullscreen 720 x 1440 with Alpha Blending
+    d->planes[2].fb_start = 0; //// (uintptr_t) fb2;  // Framebuffer
+    d->planes[2].fb_pitch = 720 * 4;  // Framebuffer Pitch
+    d->planes[2].src_w    = 720;   // Source Width
+    d->planes[2].src_h    = 1440;  // Source Height
+    d->planes[2].dst_w    = 720;   // Dest Width
+    d->planes[2].dst_h    = 1440;  // Dest Height
+    d->planes[2].dst_x    = 0;     // Dest X
+    d->planes[2].dst_y    = 0;     // Dest Y
+    d->planes[2].alpha    = 128;   // Dest Alpha
 
-	// Render the Display Planes
-	display_commit(d);
+    // Render the Display Planes
+    display_commit(d);
 }
 
 // Compute Mandelbrot Set. Based on https://www.codingame.com/playgrounds/2358/how-to-plot-the-mandelbrot-set/mandelbrot-set
 static int mandelbrot(float cx, float cy) {
-	// z = 0
+    // z = 0
     float zx = 0;
-	float zy = 0;
+    float zy = 0;
     int n = 0;
-	// abs(z) <= 2 and n < Max Iterations
+    // abs(z) <= 2 and n < Max Iterations
     while (zx*zx + zy*zy <= 4 && n < 80) {
-		// z = z*z + c
-		float mx = zx*zx - zy*zy;
-		float my = zx*zy + zy*zx;
-		zx = mx + cx;
-		zy = my + cy;
+        // z = z*z + c
+        float mx = zx*zx - zy*zy;
+        float my = zx*zy + zy*zx;
+        zx = mx + cx;
+        zy = my + cy;
         n += 1;
-	}
+    }
     return n;
 }
 
 // Convert Hue / Saturation / Value to RGB. Based on https://www.programmingalgorithms.com/algorithm/hsv-to-rgb/c/
 static uint32_t hsvToRgb(uint8_t h, uint8_t s, uint8_t v) {
-	float r = 0, g = 0, b = 0;
-	float hsv_H = 360.0 * h / 255;
-	float hsv_S = s / 255.0;
-	float hsv_V = v / 255.0;
+    float r = 0, g = 0, b = 0;
+    float hsv_H = 360.0 * h / 255;
+    float hsv_S = s / 255.0;
+    float hsv_V = v / 255.0;
 
-	if (hsv_S == 0)
-	{
-		r = hsv_V;
-		g = hsv_V;
-		b = hsv_V;
-	}
-	else
-	{
-		int i;
-		float f, p, q, t;
+    if (hsv_S == 0)
+    {
+        r = hsv_V;
+        g = hsv_V;
+        b = hsv_V;
+    }
+    else
+    {
+        int i;
+        float f, p, q, t;
 
-		if (hsv_H == 360)
-			hsv_H = 0;
-		else
-			hsv_H = hsv_H / 60;
+        if (hsv_H == 360)
+            hsv_H = 0;
+        else
+            hsv_H = hsv_H / 60;
 
-		i = (int) hsv_H;
-		f = hsv_H - i;
+        i = (int) hsv_H;
+        f = hsv_H - i;
 
-		p = hsv_V * (1.0 - hsv_S);
-		q = hsv_V * (1.0 - (hsv_S * f));
-		t = hsv_V * (1.0 - (hsv_S * (1.0 - f)));
+        p = hsv_V * (1.0 - hsv_S);
+        q = hsv_V * (1.0 - (hsv_S * f));
+        t = hsv_V * (1.0 - (hsv_S * (1.0 - f)));
 
-		switch (i)
-		{
-		case 0:
-			r = hsv_V;
-			g = t;
-			b = p;
-			break;
+        switch (i)
+        {
+        case 0:
+            r = hsv_V;
+            g = t;
+            b = p;
+            break;
 
-		case 1:
-			r = q;
-			g = hsv_V;
-			b = p;
-			break;
+        case 1:
+            r = q;
+            g = hsv_V;
+            b = p;
+            break;
 
-		case 2:
-			r = p;
-			g = hsv_V;
-			b = t;
-			break;
+        case 2:
+            r = p;
+            g = hsv_V;
+            b = t;
+            break;
 
-		case 3:
-			r = p;
-			g = q;
-			b = hsv_V;
-			break;
+        case 3:
+            r = p;
+            g = q;
+            b = hsv_V;
+            break;
 
-		case 4:
-			r = t;
-			g = p;
-			b = hsv_V;
-			break;
+        case 4:
+            r = t;
+            g = p;
+            b = hsv_V;
+            break;
 
-		default:
-			r = hsv_V;
-			g = p;
-			b = q;
-			break;
-		}
+        default:
+            r = hsv_V;
+            g = p;
+            b = q;
+            break;
+        }
 
-	}
+    }
 
-	uint8_t rgb_R = r * 255;
-	uint8_t rgb_G = g * 255;
-	uint8_t rgb_B = b * 255;
+    uint8_t rgb_R = r * 255;
+    uint8_t rgb_G = g * 255;
+    uint8_t rgb_B = b * 255;
 
-	return (rgb_R << 16)
-		| (rgb_G << 8)
-		| rgb_B;
+    return (rgb_R << 16)
+        | (rgb_G << 8)
+        | rgb_B;
 }
