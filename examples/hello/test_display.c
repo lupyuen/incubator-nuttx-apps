@@ -164,15 +164,15 @@ static void test_display(void) {
     static uint32_t fb0[720 * 1440];
 	int fb0_len = sizeof(fb0) / sizeof(fb0[0]);
     for (int i = 0; i < fb0_len; i++) {
-		// Colours are in ABGR format (Reverse of RGBA)
+		// Colours are in ARGB format
 		if (i < fb0_len / 4) {
-			// Red
+			// Blue
         	fb0[i] = 0x80000080;
 		} else if (i < fb0_len / 2) {
 			// Green
         	fb0[i] = 0x80008000;
 		} else {
-			// Blue
+			// Red
         	fb0[i] = 0x80800000;
 		}
     }
@@ -182,7 +182,7 @@ static void test_display(void) {
     static uint32_t fb1[600 * 600];
 	int fb1_len = sizeof(fb1) / sizeof(fb1[0]);
     for (int i = 0; i < fb1_len; i++) {
-		// Colours are in ABGR format (Reverse of RGBA)
+		// Colours are in ARGB format
         fb1[i] = 0x80000000 | i;
     }
 
@@ -191,7 +191,7 @@ static void test_display(void) {
     static uint32_t fb2[720 * 1440];
 	int fb2_len = sizeof(fb2) / sizeof(fb2[0]);
     for (int i = 0; i < fb2_len; i++) {
-		// Colours are in ABGR format (Reverse of RGBA)
+		// Colours are in ARGB format
 		if (i > fb2_len / 2) {
         	fb2[i] = i;
 		}
