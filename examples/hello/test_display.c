@@ -148,8 +148,9 @@ void *display_zalloc(size_t size) {
 #define IM_START -1
 #define IM_END 1
 
-/// Compute Mandelbrot Set
+/// Functions for Mandlebrot Set and Colour Conversion
 static int mandelbrot(float cx, float cy);
+static uint32_t hsvToRgb(uint8_t h, uint8_t s, uint8_t v);
 
 /// Render a Test Pattern on PinePhone's Display.
 /// Calls Allwinner A64 Display Engine, Timing Controller and MIPI Display Serial Interface.
@@ -182,15 +183,17 @@ static void test_display(void) {
         	int m = mandelbrot(cx, cy);
 
 	        // Color depends on the number of iterations
-        	int color = 255 - (m * 255.0 / MAX_ITER);
+        	uint8_t hue = 255.0 * m / MAX_ITER;
+        	uint8_t saturation = 255;
+        	uint8_t value = (m < MAX_ITER) ? 255 : 0;
+
+			// Convert Hue / Saturation / Value to RGB
+			uint32_t rgb = hsvToRgb(hue, saturation, value);
 
 			// Set the Pixel Colour (ARGB Format)
 			int p = (y * 720) + x;
 			assert(p < fb0_len);
-			fb0[p] = 0x80000000
-				| (color << 16)
-				| (color << 8)
-				| (color << 0);
+			fb0[p] = 0x80000000 | rgb;
 		}
 	}
 
@@ -198,13 +201,13 @@ static void test_display(void) {
     // for (int i = 0; i < fb0_len; i++) {
 	// 	// Colours are in ARGB format
 	// 	if (i < fb0_len / 4) {
-	// 		// Blue
+	// 		// Blue for top quarter
     //     	fb0[i] = 0x80000080;
 	// 	} else if (i < fb0_len / 2) {
-	// 		// Green
+	// 		// Green for next quarter
     //     	fb0[i] = 0x80008000;
 	// 	} else {
-	// 		// Red
+	// 		// Red for lower half
     //     	fb0[i] = 0x80800000;
 	// 	}
     // }
@@ -288,4 +291,84 @@ static int mandelbrot(float cx, float cy) {
         n += 1;
 	}
     return n;
+}
+
+// Convert Hue / Saturation / Value to RGB. Based on https://www.programmingalgorithms.com/algorithm/hsv-to-rgb/c/
+static uint32_t hsvToRgb(uint8_t h, uint8_t s, uint8_t v) {
+	float r = 0, g = 0, b = 0;
+	float hsv_H = 360.0 * h / 255;
+	float hsv_S = s / 255.0;
+	float hsv_V = v / 255.0;
+
+	if (hsv_S == 0)
+	{
+		r = hsv_V;
+		g = hsv_V;
+		b = hsv_V;
+	}
+	else
+	{
+		int i;
+		float f, p, q, t;
+
+		if (hsv_H == 360)
+			hsv_H = 0;
+		else
+			hsv_H = hsv_H / 60;
+
+		i = (int) hsv_H;
+		f = hsv_H - i;
+
+		p = hsv_V * (1.0 - hsv_S);
+		q = hsv_V * (1.0 - (hsv_S * f));
+		t = hsv_V * (1.0 - (hsv_S * (1.0 - f)));
+
+		switch (i)
+		{
+		case 0:
+			r = hsv_V;
+			g = t;
+			b = p;
+			break;
+
+		case 1:
+			r = q;
+			g = hsv_V;
+			b = p;
+			break;
+
+		case 2:
+			r = p;
+			g = hsv_V;
+			b = t;
+			break;
+
+		case 3:
+			r = p;
+			g = q;
+			b = hsv_V;
+			break;
+
+		case 4:
+			r = t;
+			g = p;
+			b = hsv_V;
+			break;
+
+		default:
+			r = hsv_V;
+			g = p;
+			b = q;
+			break;
+		}
+
+	}
+
+	uint8_t rgb_R = r * 255;
+	uint8_t rgb_G = g * 255;
+	uint8_t rgb_B = b * 255;
+
+	return (rgb_R << 16)
+		| (rgb_G << 8)
+		| rgb_B;
 }
