@@ -193,7 +193,7 @@ static void test_display(void) {
 
 	// Init Display Plane 1: (First Overlay)
 	// Box 600 x 600
-	d->planes[1].fb_start = (uintptr_t) fb1;  // Framebuffer
+	d->planes[1].fb_start = 0; //// (uintptr_t) fb1;  // Framebuffer
 	d->planes[1].fb_pitch = 600 * 4;  // Framebuffer Pitch
 	d->planes[1].src_w    = 600;  // Source Width
 	d->planes[1].src_h    = 600;  // Source Height
@@ -204,7 +204,7 @@ static void test_display(void) {
 
 	// Init Display Plane 2: (Second Overlay)
 	// Fullscreen 720 x 1440 with Alpha Blending
-	d->planes[2].fb_start = (uintptr_t) fb2;  // Framebuffer
+	d->planes[2].fb_start = 0; //// (uintptr_t) fb2;  // Framebuffer
 	d->planes[2].fb_pitch = 720 * 4;  // Framebuffer Pitch
 	d->planes[2].src_w    = 720;   // Source Width
 	d->planes[2].src_h    = 1440;  // Source Height
