@@ -162,22 +162,31 @@ static void test_display(void) {
 	// Init Framebuffer 0:
 	// Fullscreen 720 x 1440 (4 bytes per RGBA pixel)
     static uint32_t fb0[720 * 1440];
-    for (int i = 0; i < sizeof(fb0) / 4; i++) {
-        fb0[i] = 0x80000080;
+	int fb0_len = sizeof(fb0) / sizeof(fb0[0]);
+    for (int i = 0; i < fb0_len; i++) {
+		if (i < fb0_len / 4) {
+        	fb0[i] = 0x80000080;
+		} else if (i < fb0_len / 2) {
+        	fb0[i] = 0x00800080;
+		} else {
+        	fb0[i] = 0x00008080;
+		}
     }
 
 	// Init Framebuffer 1:
 	// Box 600 x 600 (4 bytes per RGBA pixel)
     static uint32_t fb1[600 * 600];
-    for (int i = 0; i < sizeof(fb1) / 4; i++) {
+	int fb1_len = sizeof(fb1) / sizeof(fb1[0]);
+    for (int i = 0; i < fb1_len; i++) {
         fb1[i] = 0x00800080;
     }
 
 	// Init Framebuffer 2:
 	// Fullscreen 720 x 1440 (4 bytes per RGBA pixel)
     static uint32_t fb2[720 * 1440];
-    for (int i = 0; i < sizeof(fb2) / 4; i++) {
-		if (i > sizeof(fb2) / 2) {
+	int fb2_len = sizeof(fb2) / sizeof(fb2[0]);
+    for (int i = 0; i < fb2_len; i++) {
+		if (i > fb2_len / 2) {
         	fb2[i] = i;
 		}
     }
