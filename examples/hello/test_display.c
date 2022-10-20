@@ -216,21 +216,35 @@ static void test_display(void) {
     // Box 600 x 600 (4 bytes per RGBA pixel)
     static uint32_t fb1[600 * 600];
     int fb1_len = sizeof(fb1) / sizeof(fb1[0]);
+
+    // Fill with Blue
     for (int i = 0; i < fb1_len; i++) {
         // Colours are in ARGB format
-        fb1[i] = 0x80000000 | i;
+        fb1[i] = 0x80000080;
     }
 
     // Init Framebuffer 2:
     // Fullscreen 720 x 1440 (4 bytes per RGBA pixel)
     static uint32_t fb2[720 * 1440];
     int fb2_len = sizeof(fb2) / sizeof(fb2[0]);
-    for (int i = 0; i < fb2_len; i++) {
-        // Colours are in ARGB format
-        if (i < fb2_len * 0.75) {
-            fb2[i] = 0x00000000;
-        } else {
-            fb2[i] = 0x80808080;
+
+    // Fill with Green Circle
+    for (int y = 0; y < 1440; y++) {
+        for (int x = 0; x < 720; x++) {
+            // Get pixel index
+            int p = (y * 720) + x;
+            assert(p < fb2_len);
+
+            // Shift coordinates so that centre of screen is (0,0)
+            int x_shift = x - 360;
+            int y_shift = y - 720;
+
+            // If x^2 + y^2 < radius^2, set the pixel to Green
+            if (x_shift*x_shift + y_shift*y_shift < 360*360) {
+                fb2[p] = 0x80008000;  // Green in ARGB Format
+            } else {  // Otherwise set to Black
+                fb2[p] = 0x00000000;  // Black in ARGB Format
+            }
         }
     }
 
@@ -250,7 +264,7 @@ static void test_display(void) {
 
     // Init Display Layer 1: (First Overlay)
     // Box 600 x 600
-    // d->planes[1].fb_start = 0;  // Disable Layer
+    // d->planes[1].fb_start = 0;  // To Disable Layer
     d->planes[1].fb_start = (uintptr_t) fb1;  // Framebuffer Address
     d->planes[1].fb_pitch = 600 * 4;  // Framebuffer Pitch
     d->planes[1].src_w    = 600;  // Source Width
@@ -262,7 +276,7 @@ static void test_display(void) {
 
     // Init Display Layer 2: (Second Overlay)
     // Fullscreen 720 x 1440 with Alpha Blending
-    // d->planes[2].fb_start = 0;  // Disable Layer
+    // d->planes[2].fb_start = 0;  // To Disable Layer
     d->planes[2].fb_start = (uintptr_t) fb2;  // Framebuffer Address
     d->planes[2].fb_pitch = 720 * 4;  // Framebuffer Pitch
     d->planes[2].src_w    = 720;   // Source Width
