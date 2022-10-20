@@ -254,7 +254,7 @@ static void test_display(void) {
     memset(&disp, 0, sizeof(disp));
     struct display *d = &disp;
 
-    // Init Display Channel 0: (Base Channel)
+    // Init Display Channel 1: (Base Channel)
     // Fullscreen 720 x 1440
     d->planes[0].fb_start = (uintptr_t) fb0;  // Framebuffer Address
     d->planes[0].fb_pitch = 720 * 4;  // Framebuffer Pitch
@@ -263,7 +263,7 @@ static void test_display(void) {
     d->planes[0].dst_w    = 720;   // Dest Width
     d->planes[0].dst_h    = 1440;  // Dest Height
 
-    // Init Display Channel 1: (First Overlay)
+    // Init Display Channel 2: (First Overlay)
     // Box 600 x 600
     // d->planes[1].fb_start = 0;  // To Disable Channel
     d->planes[1].fb_start = (uintptr_t) fb1;  // Framebuffer Address
@@ -275,7 +275,7 @@ static void test_display(void) {
     d->planes[1].dst_x    = 52;   // Dest X
     d->planes[1].dst_y    = 52;   // Dest Y
 
-    // Init Display Channel 2: (Second Overlay)
+    // Init Display Channel 3: (Second Overlay)
     // Fullscreen 720 x 1440 with Alpha Blending
     // d->planes[2].fb_start = 0;  // To Disable Channel
     d->planes[2].fb_start = (uintptr_t) fb2;  // Framebuffer Address
