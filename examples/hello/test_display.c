@@ -5,6 +5,7 @@
 //! Extract into the `nuttx` folder and rename as `p-boot`
 
 /// From p-boot/build/build.ninja
+#define DUMP_DE
 #define DUMP_DSI_INIT 1
 #define DSI_FULL_INIT 1 
 #define DE2_RESIZE 1
