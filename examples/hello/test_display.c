@@ -143,10 +143,10 @@ void *display_zalloc(size_t size) {
 #define MAX_ITER 80
 
 /// Mandlebrow Plot Window
-float RE_START = -2;
-float RE_END = 1;
-float IM_START = -1;
-float IM_END = 1;
+static float x_start = -2;
+static float x_end   = 1;
+static float y_start = -1;
+static float y_end   = 1;
 
 /// Functions for Mandlebrot Set and Colour Conversion
 static int mandelbrot(float cx, float cy);
@@ -176,8 +176,8 @@ static void test_display(void) {
     for (int y = 0; y < 1440; y++) {
         for (int x = 0; x < 720; x++) {
             // Convert Pixel Coordinates to a Complex Number
-            float cx = RE_START + (y / 1440.0) * (RE_END - RE_START);
-            float cy = IM_START + (x / 720.0)  * (IM_END - IM_START);
+            float cx = x_start + (y / 1440.0) * (x_end - x_start);
+            float cy = y_start + (x / 720.0)  * (y_end - y_start);
 
             // Compute Manelbrot Set
             int m = mandelbrot(cx, cy);
@@ -250,42 +250,40 @@ static void test_display(void) {
 
     // Init Display Layer 1: (First Overlay)
     // Box 600 x 600
-    d->planes[1].fb_start = 0; // Layer Disabled
-    // Enable the Layer:
-    // d->planes[1].fb_start = (uintptr_t) fb1;  // Framebuffer Address
-    // d->planes[1].fb_pitch = 600 * 4;  // Framebuffer Pitch
-    // d->planes[1].src_w    = 600;  // Source Width
-    // d->planes[1].src_h    = 600;  // Source Height
-    // d->planes[1].dst_w    = 600;  // Dest Width
-    // d->planes[1].dst_h    = 600;  // Dest Height
-    // d->planes[1].dst_x    = 52;   // Dest X
-    // d->planes[1].dst_y    = 52;   // Dest Y
+    // d->planes[1].fb_start = 0;  // Disable Layer
+    d->planes[1].fb_start = (uintptr_t) fb1;  // Framebuffer Address
+    d->planes[1].fb_pitch = 600 * 4;  // Framebuffer Pitch
+    d->planes[1].src_w    = 600;  // Source Width
+    d->planes[1].src_h    = 600;  // Source Height
+    d->planes[1].dst_w    = 600;  // Dest Width
+    d->planes[1].dst_h    = 600;  // Dest Height
+    d->planes[1].dst_x    = 52;   // Dest X
+    d->planes[1].dst_y    = 52;   // Dest Y
 
     // Init Display Layer 2: (Second Overlay)
     // Fullscreen 720 x 1440 with Alpha Blending
-    d->planes[2].fb_start = 0; // Layer Disabled
-    // Enable the Layer:
-    // d->planes[2].fb_start = (uintptr_t) fb2;  // Framebuffer Address
-    // d->planes[2].fb_pitch = 720 * 4;  // Framebuffer Pitch
-    // d->planes[2].src_w    = 720;   // Source Width
-    // d->planes[2].src_h    = 1440;  // Source Height
-    // d->planes[2].dst_w    = 720;   // Dest Width
-    // d->planes[2].dst_h    = 1440;  // Dest Height
-    // d->planes[2].dst_x    = 0;     // Dest X
-    // d->planes[2].dst_y    = 0;     // Dest Y
-    // d->planes[2].alpha    = 128;   // Dest Alpha
+    // d->planes[2].fb_start = 0;  // Disable Layer
+    d->planes[2].fb_start = (uintptr_t) fb2;  // Framebuffer Address
+    d->planes[2].fb_pitch = 720 * 4;  // Framebuffer Pitch
+    d->planes[2].src_w    = 720;   // Source Width
+    d->planes[2].src_h    = 1440;  // Source Height
+    d->planes[2].dst_w    = 720;   // Dest Width
+    d->planes[2].dst_h    = 1440;  // Dest Height
+    d->planes[2].dst_x    = 0;     // Dest X
+    d->planes[2].dst_y    = 0;     // Dest Y
+    d->planes[2].alpha    = 128;   // Dest Alpha
 
     // Render the Display Layers
     display_commit(d);
 
-    // Update forever...
+    // Animate the Mandelbrot Set forever...
     for (;;) {
         // Fill with Mandelbrot Set
         for (int y = 0; y < 1440; y++) {
             for (int x = 0; x < 720; x++) {
                 // Convert Pixel Coordinates to a Complex Number
-                float cx = RE_START + (y / 1440.0) * (RE_END - RE_START);
-                float cy = IM_START + (x / 720.0)  * (IM_END - IM_START);
+                float cx = x_start + (y / 1440.0) * (x_end - x_start);
+                float cy = y_start + (x / 720.0)  * (y_end - y_start);
 
                 // Compute Manelbrot Set
                 int m = mandelbrot(cx, cy);
@@ -305,12 +303,12 @@ static void test_display(void) {
             }
         }
         // Zoom in to (-1.4, 0)
-        float RE_DEST = -1.4;
-        float IM_DEST = 0;
-        RE_START += (RE_DEST - RE_START) * 0.05;
-        RE_END   -= (RE_END  - RE_DEST)  * 0.05;
-        IM_START += (IM_DEST - IM_START) * 0.05;
-        IM_END   -= (IM_END  - IM_DEST)  * 0.05;
+        float x_dest = -1.4;
+        float y_dest = 0;
+        x_start += (x_dest - x_start) * 0.05;
+        x_end   -= (x_end  - x_dest)  * 0.05;
+        y_start += (y_dest - y_start) * 0.05;
+        y_end   -= (y_end  - y_dest)  * 0.05;
     }
 }
 
