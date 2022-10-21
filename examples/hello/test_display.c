@@ -249,6 +249,12 @@ static void test_display(void) {
         }
     }
 
+    // Dump the Framebuffers
+    printf("Framebuffers:\n");
+    printf("  fb0=%p, len=0x%x\n", fb0, fb0_len);
+    printf("  fb1=%p, len=0x%x\n", fb1, fb1_len);
+    printf("  fb2=%p, len=0x%x\n", fb2, fb2_len);
+
     // Allocate 3 UI Channels
     static struct display disp;
     memset(&disp, 0, sizeof(disp));
