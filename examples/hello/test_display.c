@@ -214,7 +214,7 @@ static void test_display(void) {
     // }
 
     // Init Framebuffer 1:
-    // Box 600 x 600 (4 bytes per RGBA pixel)
+    // Square 600 x 600 (4 bytes per RGBA pixel)
     static uint32_t fb1[600 * 600];
     int fb1_len = sizeof(fb1) / sizeof(fb1[0]);
 
@@ -264,7 +264,7 @@ static void test_display(void) {
     d->planes[0].dst_h    = 1440;  // Dest Height
 
     // Init Display Channel 2: (First Overlay)
-    // Box 600 x 600
+    // Square 600 x 600
     // d->planes[1].fb_start = 0;  // To Disable Channel
     d->planes[1].fb_start = (uintptr_t) fb1;  // Framebuffer Address
     d->planes[1].fb_pitch = 600 * 4;  // Framebuffer Pitch
