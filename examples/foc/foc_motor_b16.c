@@ -948,7 +948,7 @@ int foc_motor_init(FAR struct foc_motor_b16_s *motor,
   /* Initialize motor alignment data */
 
   align_cfg.volt         = ftob16(CONFIG_EXAMPLES_FOC_ALIGN_VOLT / 1000.0f);
-  align_cfg.offset_steps = (CONFIG_EXAMPLES_FOC_NOTIFIER_FREQ *     \
+  align_cfg.offset_steps = (CONFIG_EXAMPLES_FOC_NOTIFIER_FREQ * \
                             CONFIG_EXAMPLES_FOC_ALIGN_SEC / 1000);
 
   /* Connect align callbacks */
@@ -988,6 +988,8 @@ int foc_motor_init(FAR struct foc_motor_b16_s *motor,
 
   ident_cfg.per         = motor->per;
   ident_cfg.res_current = ftob16(CONFIG_EXAMPLES_FOC_IDENT_RES_CURRENT /
+                                 1000.0f);
+  ident_cfg.res_ki      = ftob16(CONFIG_EXAMPLES_FOC_IDENT_RES_KI /
                                  1000.0f);
   ident_cfg.ind_volt    = ftob16(CONFIG_EXAMPLES_FOC_IDENT_IND_VOLTAGE /
                                  1000.0f);

@@ -25,11 +25,40 @@
 #include <nuttx/config.h>
 
 #include <sys/boardctl.h>
+#include <nuttx/symtab.h>
 
 #include "system/readline.h"
+#include "netutils/netinit.h"
 #include "nshlib/nshlib.h"
 
 #include "nsh.h"
+#include "nsh_console.h"
+
+/****************************************************************************
+ * Pre-processor Definitions
+ ****************************************************************************/
+
+/* Symbol table is not needed if loadable binary modules are not supported */
+
+#if !defined(CONFIG_LIBC_EXECFUNCS)
+#  undef CONFIG_NSH_SYMTAB
+#endif
+
+/* boardctl() support is also required for application-space symbol table
+ * support.
+ */
+
+#if !defined(CONFIG_BOARDCTL) || !defined(CONFIG_BOARDCTL_APP_SYMTAB)
+#  undef CONFIG_NSH_SYMTAB
+#endif
+
+/* If a symbol table is provided by board-specific logic, then we do not
+ * need to do anything from the application space.
+ */
+
+#ifdef CONFIG_EXECFUNCS_HAVE_SYMTAB
+#  undef CONFIG_NSH_SYMTAB
+#endif
 
 /****************************************************************************
  * Private Data
@@ -44,6 +73,11 @@ static const struct extmatch_vtable_s g_nsh_extmatch =
 };
 #endif
 
+#if defined(CONFIG_NSH_SYMTAB)
+extern const struct symtab_s CONFIG_NSH_SYMTAB_ARRAYNAME[];
+extern const int CONFIG_NSH_SYMTAB_COUNTNAME;
+#endif
+
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
@@ -54,7 +88,7 @@ static const struct extmatch_vtable_s g_nsh_extmatch =
  * Description:
  *   This interface is used to initialize the NuttShell (NSH).
  *   nsh_initialize() should be called once during application start-up prior
- *   to executing either nsh_consolemain() or nsh_telnetstart().
+ *   to executing nsh_consolemain().
  *
  * Input Parameters:
  *   None
@@ -66,25 +100,86 @@ static const struct extmatch_vtable_s g_nsh_extmatch =
 
 void nsh_initialize(void)
 {
+#if defined (CONFIG_NSH_SYMTAB)
+  struct boardioc_symtab_s symdesc;
+#endif
+#if defined(CONFIG_NSH_ROMFSETC) && !defined(CONFIG_NSH_DISABLESCRIPT)
+  FAR struct console_stdio_s *pstate;
+#endif
+
 #if defined(CONFIG_NSH_READLINE) && defined(CONFIG_READLINE_TABCOMPLETION)
   /* Configure the NSH prompt */
 
   readline_prompt(g_nshprompt);
 
-#ifdef CONFIG_READLINE_HAVE_EXTMATCH
+#  ifdef CONFIG_READLINE_HAVE_EXTMATCH
   /* Set up for tab completion on NSH commands */
 
   readline_extmatch(&g_nsh_extmatch);
-#endif
+#  endif
 #endif
 
   /* Mount the /etc filesystem */
 
   (void)nsh_romfsetc();
 
+#ifdef CONFIG_NSH_USBDEV_TRACE
+  /* Initialize any USB tracing options that were requested */
+
+  usbtrace_enable(TRACE_BITSET);
+#endif
+
+#if defined(CONFIG_NSH_SYMTAB)
+  /* Make sure that we are using our symbol table */
+
+  symdesc.symtab   = (FAR struct symtab_s *)CONFIG_NSH_SYMTAB_ARRAYNAME; /* Discard 'const' */
+  symdesc.nsymbols = CONFIG_NSH_SYMTAB_COUNTNAME;
+
+  boardctl(BOARDIOC_APP_SYMTAB, (uintptr_t)&symdesc);
+#endif
+
 #ifdef CONFIG_NSH_ARCHINIT
   /* Perform architecture-specific initialization (if configured) */
 
   boardctl(BOARDIOC_INIT, 0);
+#endif
+
+#if defined(CONFIG_NSH_ROMFSETC) && !defined(CONFIG_NSH_DISABLESCRIPT)
+  pstate = nsh_newconsole(false);
+
+  /* Execute the system init script */
+
+  nsh_sysinitscript(&pstate->cn_vtbl);
+#endif
+
+#ifdef CONFIG_NSH_NETINIT
+  /* Bring up the network */
+
+  netinit_bringup();
+#endif
+
+#if defined(CONFIG_NSH_ARCHINIT) && defined(CONFIG_BOARDCTL_FINALINIT)
+  /* Perform architecture-specific final-initialization (if configured) */
+
+  boardctl(BOARDIOC_FINALINIT, 0);
+#endif
+
+#if defined(CONFIG_NSH_ROMFSETC) && !defined(CONFIG_NSH_DISABLESCRIPT)
+  /* Execute the start-up script */
+
+  nsh_initscript(&pstate->cn_vtbl);
+  nsh_release(&pstate->cn_vtbl);
+#endif
+
+#if defined(CONFIG_NSH_TELNET) && !defined(CONFIG_NSH_DISABLE_TELNETSTART) && \
+  !defined(CONFIG_NETINIT_NETLOCAL)
+  /* If the Telnet console is selected as a front-end, then start the
+   * Telnet daemon UNLESS network initialization is deferred via
+   * CONFIG_NETINIT_NETLOCAL.  In that case, the telnet daemon must be
+   * started manually with the telnetd command after the network has
+   * been initialized
+   */
+
+  nsh_telnetstart(AF_UNSPEC);
 #endif
 }

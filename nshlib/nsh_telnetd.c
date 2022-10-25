@@ -31,7 +31,6 @@
 
 #include <arpa/inet.h>
 
-#include "netutils/netinit.h"
 #include "netutils/telnetd.h"
 
 #ifdef CONFIG_TELNET_CHARACTER_MODE
@@ -68,131 +67,19 @@ enum telnetd_state_e
 
 int nsh_telnetmain(int argc, FAR char *argv[])
 {
-  UNUSED(argc);
-  UNUSED(argv);
-
   FAR struct console_stdio_s *pstate = nsh_newconsole(true);
-  FAR struct nsh_vtbl_s *vtbl;
   int ret;
 
   DEBUGASSERT(pstate != NULL);
-  vtbl = &pstate->cn_vtbl;
 
-  ninfo("Session [%d] Started\n", getpid());
+  /* Execute the session */
 
-#ifdef CONFIG_NSH_TELNET_LOGIN
-  /* Login User and Password Check */
+  ret = nsh_session(pstate, NSH_LOGIN_TELNET, argc, argv);
 
-  if (nsh_telnetlogin(pstate) != OK)
-    {
-      nsh_exit(vtbl, 1);
-      return -1; /* nsh_exit does not return */
-    }
-#endif /* CONFIG_NSH_TELNET_LOGIN */
+  /* Exit upon return */
 
-  /* The following logic mostly the same as the login in nsh_session.c.  It
-   * differs only in that gets() is called to get the command instead of
-   * readline().
-   */
-
-  /* Present a greeting and possibly a Message of the Day (MOTD) */
-
-  fputs(g_nshgreeting, pstate->cn_outstream);
-
-#ifdef CONFIG_NSH_MOTD
-# ifdef CONFIG_NSH_PLATFORM_MOTD
-  /* Output the platform message of the day */
-
-  platform_motd(vtbl->iobuffer, IOBUFFERSIZE);
-  fprintf(pstate->cn_outstream, "%s\n", vtbl->iobuffer);
-
-# else
-  /* Output the fixed message of the day */
-
-  fprintf(pstate->cn_outstream, "%s\n", g_nshmotd);
-# endif
-#endif
-
-  fflush(pstate->cn_outstream);
-
-  /* Execute the login script */
-
-#ifdef CONFIG_NSH_ROMFSRC
-  nsh_loginscript(vtbl);
-#endif
-
-  /* Then enter the command line parsing loop */
-
-  for (; ; )
-    {
-      /* Get the next line of input from the Telnet client */
-
-#ifdef CONFIG_TELNET_CHARACTER_MODE
-#ifdef CONFIG_NSH_CLE
-      /* cle() returns a negated errno value on failure (errno is not set) */
-
-      ret = cle(pstate->cn_line, g_nshprompt, CONFIG_NSH_LINELEN,
-                INSTREAM(pstate), OUTSTREAM(pstate));
-      if (ret < 0)
-        {
-          fprintf(pstate->cn_errstream, g_fmtcmdfailed, "nsh_telnetmain",
-                  "cle", NSH_ERRNO_OF(-ret));
-          nsh_exit(vtbl, 1);
-        }
-#else
-      /* Display the prompt string */
-
-      fputs(g_nshprompt, pstate->cn_outstream);
-      fflush(pstate->cn_outstream);
-
-      /* readline() returns EOF on failure (errno is not set) */
-
-      ret = readline(pstate->cn_line, CONFIG_NSH_LINELEN,
-                     INSTREAM(pstate), OUTSTREAM(pstate));
-      if (ret == EOF)
-        {
-          /* NOTE: readline() does not set the errno variable, but perhaps we
-           * will be lucky and it will still be valid.
-           */
-
-          fprintf(pstate->cn_errstream, g_fmtcmdfailed, "nsh_telnetmain",
-                  "readline", NSH_ERRNO);
-          nsh_exit(vtbl, 1);
-        }
-#endif
-#else
-      /* Display the prompt string */
-
-      fputs(g_nshprompt, pstate->cn_outstream);
-      fflush(pstate->cn_outstream);
-
-      /* fgets() returns NULL on failure (errno will be set) */
-
-      if (fgets(pstate->cn_line, CONFIG_NSH_LINELEN,
-                INSTREAM(pstate)) == NULL)
-        {
-          fprintf(pstate->cn_errstream, g_fmtcmdfailed, "nsh_telnetmain",
-                  "fgets", NSH_ERRNO);
-          nsh_exit(vtbl, 1);
-        }
-
-      ret = strlen(pstate->cn_line);
-#endif
-
-      /* Parse process the received Telnet command */
-
-      nsh_parse(vtbl, pstate->cn_line);
-      fflush(pstate->cn_outstream);
-    }
-
-  /* Clean up */
-
-  nsh_exit(vtbl, 0);
-
-  /* We do not get here, but this is necessary to keep some compilers happy */
-
-  UNUSED(ret);
-  return OK;
+  nsh_exit(&pstate->cn_vtbl, ret);
+  return ret;
 }
 
 /****************************************************************************
@@ -225,9 +112,6 @@ int nsh_telnetstart(sa_family_t family)
 
   if (state == TELNETD_NOTRUNNING)
     {
-#if defined(CONFIG_NSH_ROMFSETC) && !defined(CONFIG_NSH_CONSOLE)
-      FAR struct console_stdio_s *pstate;
-#endif
       struct telnetd_config_s config;
 
       /* There is a tiny race condition here if two tasks were to try to
@@ -235,40 +119,6 @@ int nsh_telnetstart(sa_family_t family)
        */
 
       state = TELNETD_STARTED;
-
-      /* Initialize any USB tracing options that were requested.  If
-       * standard console is also defined, then we will defer this step to
-       * the standard console.
-       */
-
-#if defined(CONFIG_NSH_USBDEV_TRACE) && !defined(CONFIG_NSH_CONSOLE)
-      usbtrace_enable(TRACE_BITSET);
-#endif
-
-      /* Execute the startup script.  If standard console is also defined,
-       * then we will not bother with the initscript here (although it is
-       * safe to call nsh_initscript multiple times).
-       */
-
-#if defined(CONFIG_NSH_ROMFSETC) && !defined(CONFIG_NSH_CONSOLE)
-      pstate = nsh_newconsole();
-      nsh_initscript(&pstate->cn_vtbl);
-      nsh_release(&pstate->cn_vtbl);
-#endif
-
-#if defined(CONFIG_NSH_NETINIT) && !defined(CONFIG_NSH_CONSOLE)
-      /* Bring up the network */
-
-      netinit_bringup();
-#endif
-
-      /* Perform architecture-specific final-initialization(if configured) */
-
-#if defined(CONFIG_NSH_ARCHINIT) && \
-    defined(CONFIG_BOARDCTL_FINALINIT) && \
-    !defined(CONFIG_NSH_CONSOLE)
-      boardctl(BOARDIOC_FINALINIT, 0);
-#endif
 
       /* Configure the telnet daemon */
 

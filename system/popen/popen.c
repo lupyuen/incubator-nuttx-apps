@@ -68,7 +68,7 @@ struct popen_file_s
  *   were created within the popen() call using the fork() function, and the
  *   child invoked the sh utility using the call:
  *
- *     execl(shell path, "sh", "-c", command, (char *)0);
+ *     execl(shell path, "sh", "-c", command, NULL);
  *
  *   where shell path is an unspecified pathname for the sh utility.
  *
@@ -253,10 +253,10 @@ FILE *popen(FAR const char *command, FAR const char *mode)
 #ifdef CONFIG_SYSTEM_POPEN_SHPATH
   argv[0] = CONFIG_SYSTEM_POPEN_SHPATH;
   errcode = posix_spawn(&container->shell, argv[0], &file_actions,
-                        &attr, argv, (FAR char * const *)NULL);
+                        &attr, argv, NULL);
 #else
   container->shell = task_spawn("popen", nsh_system, &file_actions,
-                                &attr, argv + 1, (FAR char * const *)NULL);
+                                &attr, argv + 1, NULL);
   if (container->shell < 0)
     {
       errcode = -container->shell;
