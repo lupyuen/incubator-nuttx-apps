@@ -169,7 +169,7 @@ static void test_display(void) {
     backlight_enable(90);
 
     // Init Framebuffer 0:
-    // Fullscreen 720 x 1440 (4 bytes per RGBA pixel)
+    // Fullscreen 720 x 1440 (4 bytes per ARGB pixel)
     static uint32_t fb0[720 * 1440];
     int fb0_len = sizeof(fb0) / sizeof(fb0[0]);
 
@@ -214,7 +214,7 @@ static void test_display(void) {
     // }
 
     // Init Framebuffer 1:
-    // Square 600 x 600 (4 bytes per RGBA pixel)
+    // Square 600 x 600 (4 bytes per ARGB pixel)
     static uint32_t fb1[600 * 600];
     int fb1_len = sizeof(fb1) / sizeof(fb1[0]);
 
@@ -225,7 +225,7 @@ static void test_display(void) {
     }
 
     // Init Framebuffer 2:
-    // Fullscreen 720 x 1440 (4 bytes per RGBA pixel)
+    // Fullscreen 720 x 1440 (4 bytes per ARGB pixel)
     static uint32_t fb2[720 * 1440];
     int fb2_len = sizeof(fb2) / sizeof(fb2[0]);
 
