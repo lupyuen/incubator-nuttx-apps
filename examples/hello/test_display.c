@@ -218,7 +218,7 @@ static void test_display(void) {
     static uint32_t fb1[600 * 600];
     int fb1_len = sizeof(fb1) / sizeof(fb1[0]);
 
-    // Fill with Blue
+    // Fill with Semi-Transparent Blue
     for (int i = 0; i < fb1_len; i++) {
         // Colours are in ARGB format
         fb1[i] = 0x80000080;
@@ -229,7 +229,7 @@ static void test_display(void) {
     static uint32_t fb2[720 * 1440];
     int fb2_len = sizeof(fb2) / sizeof(fb2[0]);
 
-    // Fill with Green Circle
+    // Fill with Semi-Transparent Green Circle
     for (int y = 0; y < 1440; y++) {
         for (int x = 0; x < 720; x++) {
             // Get pixel index
