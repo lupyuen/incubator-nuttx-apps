@@ -240,11 +240,11 @@ static void test_display(void) {
             int x_shift = x - 360;
             int y_shift = y - 720;
 
-            // If x^2 + y^2 < radius^2, set the pixel to Green
+            // If x^2 + y^2 < radius^2, set the pixel to Semi-Transparent Green
             if (x_shift*x_shift + y_shift*y_shift < 360*360) {
-                fb2[p] = 0x80008000;  // Green in ARGB Format
-            } else {  // Otherwise set to Black
-                fb2[p] = 0x00000000;  // Black in ARGB Format
+                fb2[p] = 0x80008000;  // Semi-Transparent Green in ARGB Format
+            } else {  // Otherwise set to Transparent Black
+                fb2[p] = 0x00000000;  // Transparent Black in ARGB Format
             }
         }
     }
