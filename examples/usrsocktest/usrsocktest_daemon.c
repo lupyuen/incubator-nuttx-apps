@@ -1579,7 +1579,7 @@ static int handle_usrsock_request(int fd, FAR struct daemon_priv_s *priv)
         },
     };
 
-  uint8_t hdrbuf[16];
+  uint8_t hdrbuf[32];
   FAR struct usrsock_request_common_s *common_hdr = (FAR void *)hdrbuf;
   ssize_t rlen;
 
@@ -1601,7 +1601,8 @@ static int handle_usrsock_request(int fd, FAR struct daemon_priv_s *priv)
       return -EIO;
     }
 
-  assert(handlers[common_hdr->reqid].hdrlen < sizeof(hdrbuf));
+  assert(handlers[common_hdr->reqid].hdrlen <
+         (sizeof(hdrbuf) - sizeof(*common_hdr)));
 
   rlen = read_req(fd, common_hdr, hdrbuf,
                   handlers[common_hdr->reqid].hdrlen);
@@ -2084,10 +2085,10 @@ int usrsocktest_daemon_stop(void)
       goto out;
     }
 
-  item = (void *)sq_peek(&priv->delayed_cmd_threads);
+  item = (FAR struct delayed_cmd_s *)sq_peek(&priv->delayed_cmd_threads);
   while (item)
     {
-      next = (void *)sq_next(&item->node);
+      next = (FAR struct delayed_cmd_s *)sq_next(&item->node);
 
       pthread_mutex_unlock(&daemon_mutex);
       pthread_join(item->tid, &retval);

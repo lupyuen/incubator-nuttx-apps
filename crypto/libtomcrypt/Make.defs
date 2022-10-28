@@ -18,11 +18,11 @@
 #
 ############################################################################
 
-ifeq ($(CONFIG_CRYPTO_LIBTOMCRYPT),y)
+ifneq ($(CONFIG_CRYPTO_LIBTOMCRYPT),)
 CONFIGURED_APPS += $(APPDIR)/crypto/libtomcrypt
 
 # It allows `<tomcrypt.h>` import.
 
-CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(APPDIR)/crypto/libtomcrypt/libtomcrypt/src/headers}
-CXXFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(APPDIR)/crypto/libtomcrypt/libtomcrypt/src/headers}
+CFLAGS += ${shell $(INCDIR) "$(CC)" $(APPDIR)/crypto/libtomcrypt/libtomcrypt/src/headers}
+CXXFLAGS += ${shell $(INCDIR) "$(CC)" $(APPDIR)/crypto/libtomcrypt/libtomcrypt/src/headers}
 endif
