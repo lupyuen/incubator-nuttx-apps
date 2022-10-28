@@ -532,6 +532,10 @@ FAR void *dhcpc_open(FAR const char *interface, FAR const void *macaddr,
   pdhcpc = malloc(sizeof(struct dhcpc_state_s) + maclen - 1);
   if (pdhcpc)
     {
+      /* Initialize the allocated structure */
+
+      memset(pdhcpc, 0, sizeof(struct dhcpc_state_s));
+
       /* RFC2131: A DHCP client MUST choose 'xid's in such a
        * way as to minimize the chance of using an 'xid' identical to one
        * used by another client.
@@ -547,9 +551,6 @@ FAR void *dhcpc_open(FAR const char *interface, FAR const void *macaddr,
             }
         }
 
-      /* Initialize the allocated structure */
-
-      memset(pdhcpc, 0, sizeof(struct dhcpc_state_s));
       pdhcpc->interface = interface;
       pdhcpc->maclen    = maclen;
       memcpy(pdhcpc->macaddr, macaddr, pdhcpc->maclen);
@@ -694,6 +695,8 @@ int dhcpc_request(FAR void *handle, FAR struct dhcpc_state *presult)
   int     retries;
   int     state;
   clock_t start;
+
+  memset(presult, 0, sizeof(*presult));
 
   /* RFC2131: For example, a client may choose a different,
    * random initial 'xid' each time the client is rebooted, and

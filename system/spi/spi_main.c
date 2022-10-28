@@ -55,7 +55,7 @@ static const struct cmdmap_s g_spicmds[] =
 {
   { "?",    spicmd_help,  "Show help     ",  NULL },
   { "bus",  spicmd_bus,   "List buses    ",  NULL },
-  { "exch",  spicmd_exch, "SPI Exchange  ", "[OPTIONS] [<hex senddata>]" },
+  { "exch", spicmd_exch,  "SPI Exchange  ", "[OPTIONS] [<hex senddata>]" },
   { "help", spicmd_help,  "Show help     ", NULL },
   { NULL,   NULL,         NULL,             NULL }
 };
@@ -186,8 +186,8 @@ static int spi_execute(FAR struct spitool_s *spitool, int argc,
 {
   FAR const struct cmdmap_s *cmdmap;
   FAR const char            *cmd;
-  cmd_t                  handler;
-  int                    ret;
+  cmd_t                      handler;
+  int                        ret;
 
   /* The form of argv is:
    *

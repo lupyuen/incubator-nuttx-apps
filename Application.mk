@@ -42,11 +42,9 @@ else
 CWD = $(CURDIR)
 endif
 
-# Add the static application library to the linked libraries. Don't do this
-# with CONFIG_BUILD_KERNEL as there is no static app library
-ifneq ($(CONFIG_BUILD_KERNEL),y)
-  LDLIBS += $(call CONVERT_PATH,$(BIN))
-endif
+# Add the static application library to the linked libraries.
+
+LDLIBS += $(call CONVERT_PATH,$(BIN))
 
 # When building a module, link with the compiler runtime.
 # This should be linked after libapps. Consider that mbedtls in libapps
@@ -128,7 +126,8 @@ endef
 define ELFCOMPILEZIG
 	@echo "ZIG: $1"
 	# Remove target suffix here since zig compiler add .o automatically
-	$(Q) $(ZIG) build-obj $(ZIGELFFLAGS) $($(strip $1)_ZIGELFFLAGS) --name $(basename $2) $1 
+	# Previously: $(Q) $(ZIG) build-obj $(ZIGELFFLAGS) $($(strip $1)_ZIGELFFLAGS) --name $(basename $2) $1 
+	$(Q) zig build-obj $(ZIGELFFLAGS) $($(strip $1)_ZIGELFFLAGS) --name $(basename $2) $1 
 endef
 
 define ELFLD

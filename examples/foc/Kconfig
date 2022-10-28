@@ -128,7 +128,7 @@ config EXAMPLES_FOC_QENCO_DEVPATH
 	default "/dev/qe"
 	---help---
 		The default path to the qenco device without the device minor number.
-		Default: /dev/qenco
+		Default: /dev/qe
 
 endif # EXAMPLES_FOC_HAVE_QENCO
 
@@ -385,6 +385,10 @@ if EXAMPLES_FOC_HAVE_IDENT
 config EXAMPLES_FOC_IDENT_RES_CURRENT
 	int "FOC motor ident resistance current (x1000)"
 	default 0
+
+config EXAMPLES_FOC_IDENT_RES_KI
+	int "FOC motor ident resistance Ki (x1000)"
+	default 50
 
 config EXAMPLES_FOC_IDENT_IND_VOLTAGE
 	int "FOC motor ident inductance voltage (x1000)"

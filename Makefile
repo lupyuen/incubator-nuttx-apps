@@ -62,10 +62,12 @@ ifeq ($(CONFIG_BUILD_KERNEL),y)
 
 install: $(foreach SDIR, $(CONFIGURED_APPS), $(SDIR)_install)
 
-.import: $(foreach SDIR, $(CONFIGURED_APPS), $(SDIR)_all)
+$(BIN): $(foreach SDIR, $(CONFIGURED_APPS), $(SDIR)_all)
 	$(Q) for app in ${CONFIGURED_APPS}; do \
 		$(MAKE) -C "$${app}" archive ; \
 	done
+
+.import: $(BIN)
 	$(Q) install libapps.a $(APPDIR)$(DELIM)import$(DELIM)libs
 	$(Q) $(MAKE) install
 
@@ -187,13 +189,13 @@ clean: $(foreach SDIR, $(CLEANDIRS), $(SDIR)_clean)
 
 distclean: $(foreach SDIR, $(CLEANDIRS), $(SDIR)_distclean)
 ifeq ($(CONFIG_WINDOWS_NATIVE),y)
-	$(Q) ( if exist  external ( \
+	$(Q) (if exist  external ( \
 		echo ********************************************************" \
 		echo * The external directory/link must be removed manually *" \
 		echo ********************************************************" \
 	)
 else
-	$(Q) ( if [ -e external ]; then \
+	$(Q) (if [ -e external ]; then \
 		echo "********************************************************"; \
 		echo "* The external directory/link must be removed manually *"; \
 		echo "********************************************************"; \
