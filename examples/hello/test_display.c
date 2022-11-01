@@ -143,15 +143,11 @@ void *display_zalloc(size_t size) {
 /// Max Iterations for Mandlebrot Set
 #define MAX_ITER 80
 
-/// Mandlebrow Plot Window
-static float x_start = -2;
-static float x_end   = 1;
-static float y_start = -1;
-static float y_end   = 1;
-
+#ifdef NOTUSED
 /// Functions for Mandlebrot Set and Colour Conversion
 static int mandelbrot(float cx, float cy);
 static uint32_t hsvToRgb(uint8_t h, uint8_t s, uint8_t v);
+#endif  //  NOTUSED
 
 /// Render a Test Pattern on PinePhone's Display.
 /// Calls Allwinner A64 Display Engine, Timing Controller and MIPI Display Serial Interface.
@@ -168,10 +164,21 @@ static void test_display(void) {
     // Enable Backlight
     backlight_enable(90);
 
+    // Test rendering in Zig: https://github.com/lupyuen/pinephone-nuttx/blob/main/render.zig
+    void test_render(void);
+    test_render();
+
+#ifdef NOTUSED
     // Init Framebuffer 0:
     // Fullscreen 720 x 1440 (4 bytes per ARGB pixel)
     static uint32_t fb0[720 * 1440];
     int fb0_len = sizeof(fb0) / sizeof(fb0[0]);
+
+    // Mandlebrow Plot Window
+    static float x_start = -2;
+    static float x_end   = 1;
+    static float y_start = -1;
+    static float y_end   = 1;
 
     // Fill with Mandelbrot Set
     for (int y = 0; y < 1440; y++) {
@@ -331,8 +338,10 @@ static void test_display(void) {
         y_start += (y_dest - y_start) * 0.05;
         y_end   -= (y_end  - y_dest)  * 0.05;
     }
+#endif  //  NOTUSED
 }
 
+#ifdef NOTUSED
 // Compute Mandelbrot Set. Based on https://www.codingame.com/playgrounds/2358/how-to-plot-the-mandelbrot-set/mandelbrot-set
 static int mandelbrot(float cx, float cy) {
     // z = 0
@@ -430,3 +439,4 @@ static uint32_t hsvToRgb(uint8_t h, uint8_t s, uint8_t v) {
         | (rgb_G << 8)
         | rgb_B;
 }
+#endif  //  NOTUSED
