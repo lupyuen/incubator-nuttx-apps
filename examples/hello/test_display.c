@@ -153,9 +153,12 @@ static uint32_t hsvToRgb(uint8_t h, uint8_t s, uint8_t v);
 /// Calls Allwinner A64 Display Engine, Timing Controller and MIPI Display Serial Interface.
 /// Based on https://megous.com/git/p-boot/tree/src/dtest.c#n221
 static void test_display(void) {
+
+#ifdef NOTUSED
     // Init PMIC
     pmic_init();
     udelay(500);
+#endif  //  NOTUSED
 
     // Init Display
     display_init();
