@@ -168,15 +168,15 @@ static void test_display(void) {
     backlight_enable(90);
 
     // Test rendering in Zig: https://github.com/lupyuen/pinephone-nuttx/blob/main/render.zig
-    void test_render(void);
-    test_render();
+    // void test_render(void);
+    // test_render();
 
-#ifdef NOTUSED
     // Init Framebuffer 0:
     // Fullscreen 720 x 1440 (4 bytes per ARGB pixel)
     static uint32_t fb0[720 * 1440];
     int fb0_len = sizeof(fb0) / sizeof(fb0[0]);
 
+#ifdef NOTUSED
     // Mandlebrow Plot Window
     static float x_start = -2;
     static float x_end   = 1;
@@ -207,21 +207,22 @@ static void test_display(void) {
             fb0[p] = 0x80000000 | rgb;
         }
     }
+#endif  // NOTUSED
 
     // Fill with Blue, Green and Red
-    // for (int i = 0; i < fb0_len; i++) {
-    // 	// Colours are in ARGB format
-    // 	if (i < fb0_len / 4) {
-    // 		// Blue for top quarter
-    //     	fb0[i] = 0x80000080;
-    // 	} else if (i < fb0_len / 2) {
-    // 		// Green for next quarter
-    //     	fb0[i] = 0x80008000;
-    // 	} else {
-    // 		// Red for lower half
-    //     	fb0[i] = 0x80800000;
-    // 	}
-    // }
+    for (int i = 0; i < fb0_len; i++) {
+    	// Colours are in ARGB format
+    	if (i < fb0_len / 4) {
+    		// Blue for top quarter
+        	fb0[i] = 0x80000080;
+    	} else if (i < fb0_len / 2) {
+    		// Green for next quarter
+        	fb0[i] = 0x80008000;
+    	} else {
+    		// Red for lower half
+        	fb0[i] = 0x80800000;
+    	}
+    }
 
     // Init Framebuffer 1:
     // Square 600 x 600 (4 bytes per ARGB pixel)
@@ -281,8 +282,8 @@ static void test_display(void) {
 
     // Init UI Channel 2: (First Overlay)
     // Square 600 x 600
-    // d->planes[1].fb_start = 0;  // To Disable Channel
-    d->planes[1].fb_start = (uintptr_t) fb1;  // Framebuffer Address
+    d->planes[1].fb_start = 0;  // To Disable Channel
+    ////d->planes[1].fb_start = (uintptr_t) fb1;  // Framebuffer Address
     d->planes[1].fb_pitch = 600 * 4;  // Framebuffer Pitch
     d->planes[1].src_w    = 600;  // Source Width
     d->planes[1].src_h    = 600;  // Source Height
@@ -293,8 +294,8 @@ static void test_display(void) {
 
     // Init UI Channel 3: (Second Overlay)
     // Fullscreen 720 x 1440 with Alpha Blending
-    // d->planes[2].fb_start = 0;  // To Disable Channel
-    d->planes[2].fb_start = (uintptr_t) fb2;  // Framebuffer Address
+    d->planes[2].fb_start = 0;  // To Disable Channel
+    ////d->planes[2].fb_start = (uintptr_t) fb2;  // Framebuffer Address
     d->planes[2].fb_pitch = 720 * 4;  // Framebuffer Pitch
     d->planes[2].src_w    = 720;   // Source Width
     d->planes[2].src_h    = 1440;  // Source Height
@@ -307,6 +308,7 @@ static void test_display(void) {
     // Render the UI Channels
     display_commit(d);
 
+#ifdef NOTUSED
     // Animate the Mandelbrot Set forever...
     for (;;) {
         // Fill with Mandelbrot Set
