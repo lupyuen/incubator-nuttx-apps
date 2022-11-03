@@ -305,11 +305,15 @@ static void test_display(int argc, FAR char *argv[]) {
     d->planes[2].dst_y    = 0;     // Dest Y
     d->planes[2].alpha    = 128;   // Dest Alpha
 
-    if (argc == 1) {
+    if (argc == 1) {  // "hello"
         // Render the UI Channels in C
         display_commit(d);
-    } else {
-        // Test rendering in Zig: https://github.com/lupyuen/pinephone-nuttx/blob/main/render.zig
+    } else if (argv[1][0] == '1')  {  // "hello 1"
+        // Test rendering in Zig with Zig Framebuffer: https://github.com/lupyuen/pinephone-nuttx/blob/main/render.zig
+        void test_render(void *);
+        test_render(fb0);
+    } else if (argv[1][0] == '2')  {  // "hello 2"
+        // Test rendering in Zig with C Framebuffer: https://github.com/lupyuen/pinephone-nuttx/blob/main/render.zig
         void test_render2(void *);
         test_render2(fb0);
     }
