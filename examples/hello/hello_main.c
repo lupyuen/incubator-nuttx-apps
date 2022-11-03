@@ -28,7 +28,7 @@
 static void a64_uart_send(int ch);
 static void test_backlight(void);
 static void test_led(void);
-static void test_display(void);
+static void test_display(int argc, FAR char *argv[]);
 void test_zig(void);
 
 /****************************************************************************
@@ -56,7 +56,7 @@ int main(int argc, FAR char *argv[])
   a64_uart_send('B');
 
   // Test the display
-  test_display();
+  test_display(argc, argv);
 
   // Test Zig App
   test_zig();

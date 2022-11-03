@@ -152,7 +152,7 @@ static uint32_t hsvToRgb(uint8_t h, uint8_t s, uint8_t v);
 /// Render a Test Pattern on PinePhone's Display.
 /// Calls Allwinner A64 Display Engine, Timing Controller and MIPI Display Serial Interface.
 /// Based on https://megous.com/git/p-boot/tree/src/dtest.c#n221
-static void test_display(void) {
+static void test_display(int argc, FAR char *argv[]) {
 
 #ifdef NOTUSED
     // Init PMIC
@@ -305,8 +305,14 @@ static void test_display(void) {
     d->planes[2].dst_y    = 0;     // Dest Y
     d->planes[2].alpha    = 128;   // Dest Alpha
 
-    // Render the UI Channels
-    display_commit(d);
+    if (argc == 1) {
+        // Render the UI Channels in C
+        display_commit(d);
+    } else {
+        // Test rendering in Zig: https://github.com/lupyuen/pinephone-nuttx/blob/main/render.zig
+        void test_render2(void *);
+        test_render2(fb0);
+    }
 
 #ifdef NOTUSED
     // Animate the Mandelbrot Set forever...
