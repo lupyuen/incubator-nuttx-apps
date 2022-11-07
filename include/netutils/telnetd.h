@@ -25,58 +25,38 @@
  * Included Files
  ****************************************************************************/
 
-#include <nuttx/config.h>
-
-/****************************************************************************
- * Pre-processor Definitions
- ****************************************************************************/
-
-/* CONFIG_TELNETD_CONSOLE - Use the first Telnet session as the default
- *   console.
- */
+#include <sys/types.h>
 
 /****************************************************************************
  * Public Types
  ****************************************************************************/
 
 /* An instance of the struct telnetd_config_s structure must be passed to
- * telnetd_start in order to configure the new Telnet daemon.
+ * telnetd_daemon in order to configure the new Telnet daemon.
  */
 
 struct telnetd_config_s
 {
-  /* These fields describe the telnet daemon */
-
-  uint8_t     d_priority;  /* The execution priority of the Telnet daemon task */
-  size_t      d_stacksize; /* The stack size needed by the Telnet daemon task */
-
   /* These fields describe the network connection */
 
-  uint16_t    d_port;      /* The port to listen on (in network byte order) */
-  sa_family_t d_family;    /* Address family */
+  uint16_t          d_port;      /* The port to listen on (in network byte order) */
+  sa_family_t       d_family;    /* Address family */
 
-  /* These fields describe the priority of each thread created by the Telnet
+  /* These fields describe the priority of each task created by the Telnet
    * daemon.
    */
 
-  uint8_t     t_priority;  /* The execution priority of the spawned task, */
-  size_t      t_stacksize; /* The stack size needed by the spawned task */
-  main_t      t_entry;     /* The entrypoint of the task to spawn when a new
-                            * connection is accepted. */
-};
-
-/* This structure represents the overall state of one telnet daemon instance
- * (Yes, multiple telnet daemons are supported).
- */
-
-struct telnetd_s
-{
-  uint16_t              port;      /* The port to listen on (in network byte order) */
-  sa_family_t           family;    /* Address family */
-  uint8_t               priority;  /* The execution priority of the spawned task, */
-  size_t                stacksize; /* The stack size needed by the spawned task */
-  main_t                entry;     /* The entrypoint of the task to spawn when a new
-                                    * connection is accepted. */
+  uint8_t           t_priority;  /* The execution priority of the spawned task, */
+  size_t            t_stacksize; /* The stack size needed by the spawned task */
+#ifndef CONFIG_BUILD_KERNEL
+  main_t            t_entry;     /* The entrypoint of the task to spawn when a new
+                                  * connection is accepted. */
+#endif
+#ifdef CONFIG_LIBC_EXECFUNCS
+  FAR const char   *t_path;      /* The binary path of the task to spawn when a new
+                                  * connection is accepted. */
+#endif
+  FAR char * const *t_argv;      /* The argument pass to the spawned task  */
 };
 
 /****************************************************************************
@@ -95,24 +75,7 @@ extern "C"
  * Name: telnetd_daemon
  *
  * Description:
- *   This function is the Telnet daemon.  It does not return (unless an
- *   error occurs).
- *
- * Parameters:
- *   Standard task start up arguments.
- *
- * Return:
- *   Does not return unless an error occurs.
- *
- ****************************************************************************/
-
-int telnetd_daemon(int argc, FAR char *argv[]);
-
-/****************************************************************************
- * Name: telnetd_start
- *
- * Description:
- *   Start the Telnet daemon.
+ *   Run the Telnet daemon loop.
  *
  * Parameters:
  *   config    A pointer to a configuration structure that characterizes the
@@ -121,13 +84,11 @@ int telnetd_daemon(int argc, FAR char *argv[]);
  *             daemon.
  *
  * Return:
- *   The process ID (pid) of the new Telnet daemon is returned on
- *   success; A negated errno is returned if the daemon was not successfully
- *   started.
+ *   A negated errno is returned if the daemon was not successfully started.
  *
  ****************************************************************************/
 
-int telnetd_start(FAR struct telnetd_config_s *config);
+int telnetd_daemon(FAR const struct telnetd_config_s *config);
 
 #undef EXTERN
 #ifdef __cplusplus
