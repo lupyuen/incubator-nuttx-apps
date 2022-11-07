@@ -39,6 +39,7 @@
  ****************************************************************************/
 
 #define IDENT_PI_KP           (ftob16(0.0f))
+#define B16UPPERLIMIT         (0x7e000000)
 
 /****************************************************************************
  * Private Data Types
@@ -66,6 +67,17 @@ struct foc_ident_b16_s
   pid_controller_b16_t                 pi;    /* PI controller for res */
   int                                  cntr;  /* Helper counter */
   int                                  stage; /* Ident stage */
+
+  /* global data in resistance identification */
+
+  b16_t                                curr_sum;
+  b16_t                                volt_sum;
+
+  /* global data in inductance identification */
+
+  b16_t                                sign;
+  b16_t                                curr1_sum;
+  b16_t                                curr2_sum;
 };
 
 /****************************************************************************
@@ -193,12 +205,30 @@ int foc_ident_res_run_b16(FAR struct foc_ident_b16_s *ident,
   /* Increase counter */
 
   ident->cntr += 1;
+  if (ident->cntr > (ident->cfg.res_steps / 3))
+    {
+      ident->volt_sum += vector2d_mag_b16(in->foc_state->vdq.q,
+                                          in->foc_state->vdq.d);
+      ident->curr_sum += vector2d_mag_b16(in->foc_state->idq.q,
+                                          in->foc_state->idq.d);
+    }
+
+  /* Overflow protection */
+
+  if (ident->volt_sum > B16UPPERLIMIT || ident->curr_sum > B16UPPERLIMIT)
+    {
+      ret = -EOVERFLOW;
+      goto errout;
+    }
 
   if (ident->cntr > ident->cfg.res_steps)
     {
       /* Get resistance */
 
-      ident->final.res = b16divb16(vref, ident->cfg.res_current);
+      ident->final.res = b16divb16(b16mulb16(
+                                     ftob16(2.0f / 3.0f),
+                                     ident->volt_sum),
+                                   ident->curr_sum);
 
       /* Force IDLE state */
 
@@ -216,8 +246,14 @@ int foc_ident_res_run_b16(FAR struct foc_ident_b16_s *ident,
       /* Reset counter */
 
       ident->cntr = 0;
+
+      /* Reset static curr_sum and volt_sum */
+
+      ident->curr_sum = 0;
+      ident->volt_sum = 0;
     }
 
+errout:
   return ret;
 }
 
@@ -243,9 +279,6 @@ int foc_ident_ind_run_b16(FAR struct foc_ident_b16_s *ident,
   b16_t        curr1_avg  = 0;
   b16_t        curr2_avg  = 0;
   b16_t        delta_curr = 0;
-  static b16_t sign       = b16ONE;
-  static b16_t curr1_sum  = 0;
-  static b16_t curr2_sum  = 0;
   b16_t        tmp1       = 0;
   b16_t        tmp2       = 0;
   b16_t        tmp3       = 0;
@@ -254,23 +287,31 @@ int foc_ident_ind_run_b16(FAR struct foc_ident_b16_s *ident,
    * if previous sing was +1 then we have bottom current.
    */
 
-  if (sign > 0)
+  if (ident->sign > 0)
     {
       /* Average bottm current */
 
-      curr1_sum += in->foc_state->idq.d;
+      ident->curr1_sum += in->foc_state->idq.d;
     }
   else
     {
       /* Average top current */
 
-      curr2_sum += in->foc_state->idq.d;
+      ident->curr2_sum += in->foc_state->idq.d;
+    }
+
+  /* Overflow protection */
+
+  if (ident->curr1_sum > B16UPPERLIMIT || ident->curr2_sum > B16UPPERLIMIT)
+    {
+      ret = -EOVERFLOW;
+      goto errout;
     }
 
   /* Invert voltage to generate square wave D voltage */
 
-  sign = -sign;
-  vref = b16mulb16(sign, ident->cfg.ind_volt);
+  ident->sign = -ident->sign;
+  vref = b16mulb16(ident->sign, ident->cfg.ind_volt);
 
   /* Force alpha voltage = vref */
 
@@ -289,11 +330,11 @@ int foc_ident_ind_run_b16(FAR struct foc_ident_b16_s *ident,
     {
       /* Half samples from curr1, other half from curr2 */
 
-      tmp1 = b16muli(curr1_sum, 2);
-      tmp2 = b16muli(curr2_sum, 2);
+      tmp1 = b16muli(ident->curr1_sum, 2);
+      tmp2 = b16muli(ident->curr2_sum, 2);
 
-      curr1_avg = b16divb16(tmp1, ident->cntr);
-      curr2_avg = b16divb16(tmp2, ident->cntr);
+      curr1_avg = b16divi(tmp1, ident->cntr);
+      curr2_avg = b16divi(tmp2, ident->cntr);
 
       /* Average delta current */
 
@@ -330,11 +371,12 @@ int foc_ident_ind_run_b16(FAR struct foc_ident_b16_s *ident,
 
       /* Reset static data */
 
-      sign      = b16ONE;
-      curr1_sum = 0;
-      curr2_sum = 0;
+      ident->sign      = b16ONE;
+      ident->curr1_sum = 0;
+      ident->curr2_sum = 0;
     }
 
+errout:
   return ret;
 }
 
@@ -351,6 +393,7 @@ int foc_ident_ind_run_b16(FAR struct foc_ident_b16_s *ident,
 
 int foc_routine_ident_init_b16(FAR foc_routine_b16_t *r)
 {
+  FAR struct foc_ident_b16_s *i   = NULL;
   int ret = OK;
 
   DEBUGASSERT(r);
@@ -363,6 +406,9 @@ int foc_routine_ident_init_b16(FAR foc_routine_b16_t *r)
       ret = -ENOMEM;
       goto errout;
     }
+
+  i = r->data;
+  i->sign = b16ONE;
 
 errout:
   return ret;
@@ -566,6 +612,7 @@ int foc_routine_ident_run_b16(FAR foc_routine_b16_t *r,
       case FOC_IDENT_RUN_DONE:
         {
           ret = FOC_ROUTINE_RUN_DONE;
+          i->stage = FOC_IDENT_RUN_INIT;
 
           break;
         }
