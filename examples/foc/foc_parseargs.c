@@ -29,6 +29,7 @@
 #include <getopt.h>
 
 #include "foc_debug.h"
+#include "foc_thr.h"
 #include "foc_parseargs.h"
 
 /****************************************************************************
@@ -37,6 +38,12 @@
 
 #define OPT_FKI     (SCHAR_MAX + 1)
 #define OPT_FKP     (SCHAR_MAX + 2)
+
+#define OPT_IRKI    (SCHAR_MAX + 3)
+#define OPT_IRC     (SCHAR_MAX + 4)
+#define OPT_IRS     (SCHAR_MAX + 5)
+#define OPT_IIV     (SCHAR_MAX + 6)
+#define OPT_IIS     (SCHAR_MAX + 7)
 
 /****************************************************************************
  * Private Data
@@ -65,6 +72,13 @@ static struct option g_long_options[] =
 #ifdef CONFIG_EXAMPLES_FOC_CONTROL_PI
     { "fkp", required_argument, 0, OPT_FKP },
     { "fki", required_argument, 0, OPT_FKI },
+#endif
+#ifdef CONFIG_EXAMPLES_FOC_HAVE_IDENT
+    { "irki", required_argument, 0, OPT_IRKI },
+    { "irc", required_argument, 0, OPT_IRC },
+    { "irs", required_argument, 0, OPT_IRS },
+    { "iiv", required_argument, 0, OPT_IIV },
+    { "iis", required_argument, 0, OPT_IIS },
 #endif
     { 0, 0, 0, 0 }
   };
@@ -126,6 +140,18 @@ static void foc_help(void)
   PRINTF("  [--fkp] PI Ki coefficient [x1000] (default: %d)\n",
          CONFIG_EXAMPLES_FOC_IDQ_KI);
 #endif
+#ifdef CONFIG_EXAMPLES_FOC_HAVE_IDENT
+  PRINTF("  [--irki] res Ki coefficient [x1000] (default: %d)\n",
+         CONFIG_EXAMPLES_FOC_IDENT_RES_KI);
+  PRINTF("  [--irc] res current [x1000] (default: %d)\n",
+         CONFIG_EXAMPLES_FOC_IDENT_RES_CURRENT);
+  PRINTF("  [--irs] res sec (default: %d)\n",
+         CONFIG_EXAMPLES_FOC_IDENT_RES_SEC);
+  PRINTF("  [--iiv] ind voltage [x1000] (default: %d)\n",
+         CONFIG_EXAMPLES_FOC_IDENT_IND_VOLTAGE);
+  PRINTF("  [--iis] ind sec (default: %d)\n",
+         CONFIG_EXAMPLES_FOC_IDENT_IND_SEC);
+#endif
 }
 
 /****************************************************************************
@@ -156,13 +182,45 @@ void parse_args(FAR struct args_s *args, int argc, FAR char **argv)
 #ifdef CONFIG_EXAMPLES_FOC_CONTROL_PI
           case OPT_FKP:
             {
-              args->foc_pi_kp = atoi(optarg);
+              args->cfg.foc_pi_kp = atoi(optarg);
               break;
             }
 
           case OPT_FKI:
             {
-              args->foc_pi_ki = atoi(optarg);
+              args->cfg.foc_pi_ki = atoi(optarg);
+              break;
+            }
+#endif
+
+#ifdef CONFIG_EXAMPLES_FOC_HAVE_IDENT
+          case OPT_IRKI:
+            {
+              args->cfg.ident_res_ki = atoi(optarg);
+              break;
+            }
+
+          case OPT_IRC:
+            {
+              args->cfg.ident_res_curr = atoi(optarg);
+              break;
+            }
+
+          case OPT_IRS:
+            {
+              args->cfg.ident_res_sec = atoi(optarg);
+              break;
+            }
+
+          case OPT_IIV:
+            {
+              args->cfg.ident_ind_volt = atoi(optarg);
+              break;
+            }
+
+          case OPT_IIS:
+            {
+              args->cfg.ident_ind_sec = atoi(optarg);
               break;
             }
 #endif
@@ -181,20 +239,20 @@ void parse_args(FAR struct args_s *args, int argc, FAR char **argv)
 
           case 'f':
             {
-              args->fmode = atoi(optarg);
+              args->cfg.fmode = atoi(optarg);
               break;
             }
 
           case 'm':
             {
-              args->mmode = atoi(optarg);
+              args->cfg.mmode = atoi(optarg);
               break;
             }
 
 #ifdef CONFIG_EXAMPLES_FOC_HAVE_TORQ
           case 'r':
             {
-              args->torqmax = atoi(optarg);
+              args->cfg.torqmax = atoi(optarg);
               break;
             }
 #endif
@@ -202,7 +260,7 @@ void parse_args(FAR struct args_s *args, int argc, FAR char **argv)
 #ifdef CONFIG_EXAMPLES_FOC_HAVE_VEL
           case 'v':
             {
-              args->velmax = atoi(optarg);
+              args->cfg.velmax = atoi(optarg);
               break;
             }
 #endif
@@ -210,7 +268,7 @@ void parse_args(FAR struct args_s *args, int argc, FAR char **argv)
 #ifdef CONFIG_EXAMPLES_FOC_HAVE_POS
           case 'x':
             {
-              args->posmax = atoi(optarg);
+              args->cfg.posmax = atoi(optarg);
               break;
             }
 #endif
@@ -230,7 +288,7 @@ void parse_args(FAR struct args_s *args, int argc, FAR char **argv)
 #ifdef CONFIG_EXAMPLES_FOC_HAVE_OPENLOOP
           case 'o':
             {
-              args->qparam = atoi(optarg);
+              args->cfg.qparam = atoi(optarg);
               break;
             }
 #endif
@@ -253,4 +311,100 @@ void parse_args(FAR struct args_s *args, int argc, FAR char **argv)
             }
         }
     }
+}
+
+/****************************************************************************
+ * Name: validate_args
+ ****************************************************************************/
+
+int validate_args(FAR struct args_s *args)
+{
+  int ret = -EINVAL;
+
+#ifdef CONFIG_EXAMPLES_FOC_CONTROL_PI
+  /* Current PI controller */
+
+  if (args->cfg.foc_pi_kp == 0 && args->cfg.foc_pi_ki == 0)
+    {
+      PRINTF("ERROR: missing FOC Kp/Ki configuration\n");
+      goto errout;
+    }
+#endif
+
+  /* FOC operation mode */
+
+  if (args->cfg.fmode != FOC_FMODE_IDLE &&
+      args->cfg.fmode != FOC_FMODE_VOLTAGE &&
+      args->cfg.fmode != FOC_FMODE_CURRENT)
+    {
+      PRINTF("Invalid op mode value %d s\n", args->cfg.fmode);
+      goto errout;
+    }
+
+  /* Example control mode */
+
+  if (
+#ifdef CONFIG_EXAMPLES_FOC_HAVE_TORQ
+    args->cfg.mmode != FOC_MMODE_TORQ &&
+#endif
+#ifdef CONFIG_EXAMPLES_FOC_HAVE_VEL
+    args->cfg.mmode != FOC_MMODE_VEL &&
+#endif
+#ifdef CONFIG_EXAMPLES_FOC_HAVE_POS
+    args->cfg.mmode != FOC_MMODE_POS &&
+#endif
+#ifdef CONFIG_EXAMPLES_FOC_HAVE_ALIGN
+    args->cfg.mmode != FOC_MMODE_ALIGN_ONLY &&
+#endif
+#ifdef CONFIG_EXAMPLES_FOC_HAVE_IDENT
+    args->cfg.mmode != FOC_MMODE_IDENT_ONLY &&
+#endif
+    1)
+    {
+      PRINTF("Invalid ctrl mode value %d s\n", args->cfg.mmode);
+      goto errout;
+    }
+
+  /* Example state */
+
+  if (args->state != FOC_EXAMPLE_STATE_FREE &&
+      args->state != FOC_EXAMPLE_STATE_STOP &&
+      args->state != FOC_EXAMPLE_STATE_CW &&
+      args->state != FOC_EXAMPLE_STATE_CCW)
+    {
+      PRINTF("Invalid state value %d s\n", args->state);
+      goto errout;
+    }
+
+  /* Time parameter */
+
+  if (args->time <= 0 && args->time != -1)
+    {
+      PRINTF("Invalid time value %d s\n", args->time);
+      goto errout;
+    }
+
+#ifdef CONFIG_EXAMPLES_FOC_HAVE_IDENT
+  /* Motor identification parameters */
+
+  if (args->cfg.ident_res_ki == 0 || args->cfg.ident_res_curr == 0 ||
+      args->cfg.ident_res_sec == 0)
+    {
+      PRINTF("ERROR: missing motor res ident configuration\n");
+      goto errout;
+    }
+
+  if (args->cfg.ident_ind_volt == 0 || args->cfg.ident_ind_sec == 0)
+    {
+      PRINTF("ERROR: missing motor ind ident configuration\n");
+      goto errout;
+    }
+#endif
+
+  /* Otherwise OK */
+
+  ret = OK;
+
+errout:
+  return ret;
 }
