@@ -168,15 +168,24 @@ static void test_display(int argc, FAR char *argv[]) {
     backlight_enable(90);
 
     // Test rendering in Zig: https://github.com/lupyuen/pinephone-nuttx/blob/main/render.zig
-    // void test_render(void);
-    // test_render();
+    void test_render(int channels);
 
+    if (argc == 2 && argv[1][0] == '1') {  // "hello 1"
+        // Render 1 UI Channel
+        test_render(1);
+    } else if (argc == 2 && argv[1][0] == '3')  {  // "hello 3"
+        // Render 3 UI Channels
+        test_render(3);
+    } else {
+        puts("Argument must be 1 or 3");
+    }
+
+#ifdef NOTUSED
     // Init Framebuffer 0:
     // Fullscreen 720 x 1440 (4 bytes per ARGB pixel)
     static uint32_t fb0[720 * 1440];
     int fb0_len = sizeof(fb0) / sizeof(fb0[0]);
 
-#ifdef NOTUSED
     // Mandlebrow Plot Window
     static float x_start = -2;
     static float x_end   = 1;
@@ -207,7 +216,6 @@ static void test_display(int argc, FAR char *argv[]) {
             fb0[p] = 0x80000000 | rgb;
         }
     }
-#endif  // NOTUSED
 
     // Fill with Blue, Green and Red
     for (int i = 0; i < fb0_len; i++) {
@@ -305,20 +313,6 @@ static void test_display(int argc, FAR char *argv[]) {
     d->planes[2].dst_y    = 0;     // Dest Y
     d->planes[2].alpha    = 128;   // Dest Alpha
 
-    if (argc == 1) {  // "hello"
-        // Render the UI Channels in C
-        display_commit(d);
-    } else if (argv[1][0] == '1')  {  // "hello 1"
-        // Test rendering in Zig with Zig Framebuffer: https://github.com/lupyuen/pinephone-nuttx/blob/main/render.zig
-        void test_render(void *);
-        test_render(fb0);
-    } else if (argv[1][0] == '2')  {  // "hello 2"
-        // Test rendering in Zig with C Framebuffer: https://github.com/lupyuen/pinephone-nuttx/blob/main/render.zig
-        void test_render2(void *);
-        test_render2(fb0);
-    }
-
-#ifdef NOTUSED
     // Animate the Mandelbrot Set forever...
     for (;;) {
         // Fill with Mandelbrot Set
