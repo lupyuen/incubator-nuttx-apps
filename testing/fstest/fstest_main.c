@@ -28,6 +28,10 @@
 #include <sys/ioctl.h>
 #include <sys/statfs.h>
 
+#ifdef CONFIG_TESTING_FSTEST_POWEROFF
+#include <sys/boardctl.h>
+#endif
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,35 +51,6 @@
  ****************************************************************************/
 
 /* Configuration ************************************************************/
-
-#ifndef CONFIG_TESTING_FSTEST_MAXNAME
-#  define CONFIG_TESTING_FSTEST_MAXNAME 128
-#endif
-
-#if CONFIG_TESTING_FSTEST_MAXNAME > 255
-#  undef CONFIG_TESTING_FSTEST_MAXNAME
-#  define CONFIG_TESTING_FSTEST_MAXNAME 255
-#endif
-
-#ifndef CONFIG_TESTING_FSTEST_MAXFILE
-#  define CONFIG_TESTING_FSTEST_MAXFILE 8192
-#endif
-
-#ifndef CONFIG_TESTING_FSTEST_MAXIO
-#  define CONFIG_TESTING_FSTEST_MAXIO 347
-#endif
-
-#ifndef CONFIG_TESTING_FSTEST_MAXOPEN
-#  define CONFIG_TESTING_FSTEST_MAXOPEN 512
-#endif
-
-#ifndef CONFIG_TESTING_FSTEST_MOUNTPT
-#  error CONFIG_TESTING_FSTEST_MOUNTPT must be provided
-#endif
-
-#ifndef CONFIG_TESTING_FSTEST_NLOOPS
-#  define CONFIG_TESTING_FSTEST_NLOOPS 100
-#endif
 
 #ifndef CONFIG_TESTING_FSTEST_VERBOSE
 #  define CONFIG_TESTING_FSTEST_VERBOSE 0
@@ -1175,5 +1150,14 @@ int main(int argc, FAR char *argv[])
   fstest_endmemusage(ctx);
   fflush(stdout);
   free(ctx);
+
+#ifdef CONFIG_TESTING_FSTEST_POWEROFF
+  /* Power down. This is useful when used with the simulator and gcov,
+   * as the graceful shutdown allows for the generation of the .gcda files.
+   */
+
+  boardctl(BOARDIOC_POWEROFF, 0);
+#endif
+
   return 0;
 }
