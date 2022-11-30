@@ -1,5 +1,5 @@
 /****************************************************************************
- * apps/netutils/iperf/iperf.h
+ * apps/examples/ltr308/ltr308_main.c
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,80 +18,75 @@
  *
  ****************************************************************************/
 
-#ifndef __APPS_NETUTILS_IPERF_IPERF_H
-#define __APPS_NETUTILS_IPERF_IPERF_H
-
 /****************************************************************************
  * Included Files
  ****************************************************************************/
 
+#include <nuttx/config.h>
+#include <nuttx/sensors/ioctl.h>
+#include <nuttx/sensors/sensor.h>
+#include <nuttx/sensors/ltr308.h>
+
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <poll.h>
 
-#ifndef __ASSEMBLY__
+/****************************************************************************
+ * Public Functions
+ ****************************************************************************/
 
-#undef EXTERN
-#if defined(__cplusplus)
-#define EXTERN extern "C"
-extern "C"
+/****************************************************************************
+ * ltr308_main
+ ****************************************************************************/
+
+int main(int argc, FAR char *argv[])
 {
-#else
-#define EXTERN extern
-#endif
+  struct ltr308_calibval calibval;
+  struct sensor_light light;
+  struct pollfd pfd;
+  int ret;
+  int fd;
 
-/****************************************************************************
- * Pre-processor Definitions
- ****************************************************************************/
+  fd = open("/dev/uorb/sensor_light0", O_RDONLY);
+  if (fd < 0)
+    {
+      perror("Could not open file");
+      return fd;
+    }
 
-#define IPERF_FLAG_CLIENT (1)
-#define IPERF_FLAG_SERVER (1 << 1)
-#define IPERF_FLAG_TCP (1 << 2)
-#define IPERF_FLAG_UDP (1 << 3)
+  calibval.integration_time = 1;
+  calibval.measurement_rate = 2;
+  calibval.gain = 1;
+  ret = ioctl(fd, SNIOC_CALIBRATE, &calibval);
+  if (ret < 0)
+    {
+      perror("Could not calibrate sensor");
+      goto err_out;
+    }
 
-/****************************************************************************
- * Public Types
- ****************************************************************************/
+  memset(&pfd, 0, sizeof(struct pollfd));
+  pfd.fd = fd;
+  pfd.events = POLLIN;
+  ret = poll(&pfd, 1, -1);
+  if (ret < 0)
+    {
+      perror("Could not poll sensor");
+      goto err_out;
+    }
 
-struct iperf_cfg_t
-{
-  uint32_t flag;
-  uint32_t dip;
-  uint32_t sip;
-  uint16_t dport;
-  uint16_t sport;
-  uint32_t interval;
-  uint32_t time;
-};
+  ret = read(fd, &light, sizeof(struct sensor_light));
+  if (ret < 0)
+    {
+      perror("Could not read from sensor");
+      goto err_out;
+    }
 
-/****************************************************************************
- * Public Function Prototypes
- ****************************************************************************/
+  printf("timestamp: %llu, lux: %f\n", light.timestamp, light.light);
+  return OK;
 
-/****************************************************************************
- * Name: iperf_start
- *
- * Description:
- *   Start iperf task.
- *
- ****************************************************************************/
-
-int iperf_start(FAR struct iperf_cfg_t *cfg);
-
-/****************************************************************************
- * Name: iperf_stop
- *
- * Description:
- *   Stop iperf task.
- *
- ****************************************************************************/
-
-int iperf_stop(void);
-
-#ifdef __cplusplus
+err_out:
+  close(fd);
+  return ret;
 }
-#endif
-#undef EXTERN
-
-#endif /* __ASSEMBLY__ */
-#endif /* __APPS_NETUTILS_IPERF_IPERF_H */

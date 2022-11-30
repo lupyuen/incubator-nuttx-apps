@@ -537,8 +537,8 @@ static const char g_fmtmodified[]   =
                             "No write since last change (add ! to override)";
 static const char g_fmtnotvalid[]   = "Command not valid";
 static const char g_fmtnotcmd[]     = "Not an editor command: %s";
-static const char g_fmtsrcbot[]     = "search hit BOTTOM, continuing at TOP";
-static const char g_fmtsrctop[]     = "search hit TOP, continuing at BOTTOM";
+static const char g_fmtsrcbot[]     = "search hit BOTTOM(continuing at TOP)";
+static const char g_fmtsrctop[]     = "search hit TOP(continuing at BOTTOM)";
 static const char g_fmtinsert[]     = "--INSERT--";
 
 /****************************************************************************
@@ -885,7 +885,7 @@ static void vi_printf(FAR struct vi_s *vi, FAR const char *prefix,
 
   /* Expand the prefix message in the scratch buffer */
 
-  len = prefix ? snprintf(vi->scratch, SCRATCH_BUFSIZE, prefix) : 0;
+  len = prefix ? snprintf(vi->scratch, SCRATCH_BUFSIZE, "%s", prefix) : 0;
 
   va_start(ap, fmt);
   len += vsnprintf(vi->scratch + len, SCRATCH_BUFSIZE - len, fmt, ap);
