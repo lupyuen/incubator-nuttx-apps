@@ -1,5 +1,5 @@
 ############################################################################
-# apps/examples/SERVIDOR/Make.defs
+# apps/examples/ltr308/Makefile
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -20,17 +20,15 @@
 
 include $(APPDIR)/Make.defs
 
-# SERVIDOR built-in application info
+# LTR308 ambient light sensor example built-in application info
 
-PROGNAME  = $(CONFIG_EXAMPLES_TCP_IPC_SERVER_PROGNAME)
-PRIORITY  = $(CONFIG_EXAMPLES_TCP_IPC_SERVER_PRIORITY)
-STACKSIZE = $(CONFIG_EXAMPLES_TCP_IPC_SERVER_STACKSIZE)
-MODULE    = $(CONFIG_EXAMPLES_TCP_IPC_SERVER)
+PROGNAME = $(CONFIG_EXAMPLES_LTR308_PROGNAME)
+PRIORITY = $(CONFIG_EXAMPLES_LTR308_PRIORITY)
+STACKSIZE = $(CONFIG_EXAMPLES_LTR308_STACKSIZE)
+MODULE = $(CONFIG_EXAMPLES_LTR308)
 
-# SERVIDOR Example
-CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/examples/tcp_ipc_server/lorawan
-CSRCS  = uart_lorawan_layer.c protocol.c
+# LTR308 ambient light sensor example
 
-MAINSRC = tcp_ipc_server_main.c
+MAINSRC = ltr308_main.c
 
 include $(APPDIR)/Application.mk
