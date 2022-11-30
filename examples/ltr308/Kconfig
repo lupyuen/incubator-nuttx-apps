@@ -3,29 +3,28 @@
 # see the file kconfig-language.txt in the NuttX tools repository.
 #
 
-config SYSTEM_DHCPC_RENEW
-	tristate "DHCP Address Renewal"
+config EXAMPLES_LTR308
+	tristate "LTR308 ambient light sensor example"
 	default n
-	select NETUTILS_DHCPC
-	depends on NET_UDP
+	depends on SENSORS_LTR308
 	---help---
-		Enable the DHCP client 'renew' command
+		Enable the LTR308 example
 
-if SYSTEM_DHCPC_RENEW
+if EXAMPLES_LTR308
 
-config DHCPC_RENEW_PROGNAME
+config EXAMPLES_LTR308_PROGNAME
 	string "Program name"
-	default "renew"
+	default "ltr308"
 	---help---
 		This is the name of the program that will be used when the NSH ELF
 		program is installed.
 
-config DHCPC_RENEW_PRIORITY
-	int "DHCPC task priority"
+config EXAMPLES_LTR308_PRIORITY
+	int "LTR308 task priority"
 	default 100
 
-config DHCPC_RENEW_STACKSIZE
-	int "DHCPC stack size"
+config EXAMPLES_LTR308_STACKSIZE
+	int "LTR308 stack size"
 	default DEFAULT_TASK_STACKSIZE
 
 endif
