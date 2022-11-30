@@ -26,6 +26,7 @@ __Read the articles...__
 -   [__"Read NuttX Sensor Data with Zig"__](https://lupyuen.github.io/articles/sensor)
 -   [__"Zig Visual Programming with Blockly"__](https://lupyuen.github.io/articles/blockly)
 -   [__"Visual Programming with Zig and NuttX Sensors"__](https://lupyuen.github.io/articles/visual)
+-   [__"Preparing a Pull Request for Apache NuttX RTOS"__](https://lupyuen.github.io/articles/pr)
 
 __NuttX on PinePhone__
 
