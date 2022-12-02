@@ -152,24 +152,23 @@ static uint32_t hsvToRgb(uint8_t h, uint8_t s, uint8_t v);
 /// Render a Test Pattern on PinePhone's Display.
 /// Calls Allwinner A64 Display Engine, Timing Controller and MIPI Display Serial Interface.
 /// Based on https://megous.com/git/p-boot/tree/src/dtest.c#n221
-static void test_display(int argc, FAR char *argv[]) {
+/// Moved to https://github.com/lupyuen/incubator-nuttx-apps/blob/de3/examples/hello/hello_main.c
+////static
+void NOTUSED_test_display(int argc, FAR char *argv[]) {
 
 #ifdef NOTUSED
-    // Init PMIC
+    // Init PMIC. Not needed.
     pmic_init();
     udelay(500);
-#endif  //  NOTUSED
 
-    // Init Display
+    // Init Display and Enable Backlight. Moved to https://github.com/lupyuen/pinephone-nuttx/blob/main/render.zig
     display_init();
     udelay(160000);
-
-    // Enable Backlight
     backlight_enable(90);
 
     // Test rendering in Zig: https://github.com/lupyuen/pinephone-nuttx/blob/main/render.zig
+    // Moved to https://github.com/lupyuen/incubator-nuttx-apps/blob/de3/examples/hello/hello_main.c
     void test_render(int channels);
-
     if (argc == 2 && argv[1][0] == '1') {  // "hello 1"
         // Render 1 UI Channel
         test_render(1);
@@ -179,6 +178,7 @@ static void test_display(int argc, FAR char *argv[]) {
     } else {
         puts("Argument must be 1 or 3");
     }
+#endif  //  NOTUSED
 
 #ifdef NOTUSED
     // Init Framebuffer 0:
