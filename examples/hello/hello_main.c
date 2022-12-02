@@ -52,7 +52,10 @@ int main(int argc, FAR char *argv[])
   a64_uart_send('B');
 
   // Test rendering in Zig: https://github.com/lupyuen/pinephone-nuttx/blob/main/render.zig
-  if (argc == 2 && argv[1][0] == '1') {  // "hello 1"
+  if (argc == 2 && argv[1][0] == '0') {  // "hello 0"
+      // Render 3 UI Channels, no backlight
+      test_render(0);
+  } else if (argc == 2 && argv[1][0] == '1') {  // "hello 1"
       // Render 1 UI Channel
       test_render(1);
   } else if (argc == 2 && argv[1][0] == '3')  {  // "hello 3"
