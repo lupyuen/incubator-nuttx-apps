@@ -1,5 +1,5 @@
 ############################################################################
-# apps/system/nxplayer/Makefile
+# apps/system/nxcamera/Makefile
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -20,19 +20,17 @@
 
 include $(APPDIR)/Make.defs
 
-# NxPlayer Library
+# NxCamera Library
 
-CSRCS     = nxplayer.c
-CSRCS    += nxplayer_mp3.c
-CSRCS    += nxplayer_pcm.c
+CSRCS     = nxcamera.c
 
-ifneq ($(CONFIG_NXPLAYER_COMMAND_LINE),)
-PROGNAME  = nxplayer
+ifneq ($(CONFIG_SYSTEM_NXCAMERA),)
+PROGNAME  = nxcamera
 PRIORITY  = SCHED_PRIORITY_DEFAULT
-STACKSIZE = $(CONFIG_NXPLAYER_MAINTHREAD_STACKSIZE)
-MODULE    = $(CONFIG_NXPLAYER_COMMAND_LINE)
+STACKSIZE = $(CONFIG_NXCAMERA_MAINTHREAD_STACKSIZE)
+MODULE    = $(CONFIG_SYSTEM_NXCAMERA)
 
-MAINSRC   = nxplayer_main.c
+MAINSRC   = nxcamera_main.c
 endif
 
 include $(APPDIR)/Application.mk
