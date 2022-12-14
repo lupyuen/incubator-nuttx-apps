@@ -26,7 +26,6 @@ __Read the articles...__
 -   [__"Read NuttX Sensor Data with Zig"__](https://lupyuen.github.io/articles/sensor)
 -   [__"Zig Visual Programming with Blockly"__](https://lupyuen.github.io/articles/blockly)
 -   [__"Visual Programming with Zig and NuttX Sensors"__](https://lupyuen.github.io/articles/visual)
--   [__"Preparing a Pull Request for Apache NuttX RTOS"__](https://lupyuen.github.io/articles/pr)
 
 __NuttX on PinePhone__
 
@@ -39,6 +38,8 @@ __NuttX on PinePhone__
 -   [__"NuttX RTOS for PinePhone: Display Driver in Zig"__](https://lupyuen.github.io/articles/dsi2)
 -   [__"Rendering PinePhone's Display (DE and TCON0)"__](https://lupyuen.github.io/articles/de)
 -   [__"NuttX RTOS for PinePhone: Render Graphics in Zig"__](https://lupyuen.github.io/articles/de2)
+-   [__"Preparing a Pull Request for Apache NuttX RTOS"__](https://lupyuen.github.io/articles/pr)
+-   [__"NuttX RTOS for PinePhone: MIPI Display Serial Interface"__](https://lupyuen.github.io/articles/dsi3)
 
 # Application Folder
 
