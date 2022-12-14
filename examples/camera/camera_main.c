@@ -36,12 +36,7 @@
 #include <nuttx/video/video.h>
 
 #include "camera_fileutil.h"
-
-#ifdef CONFIG_EXAMPLES_CAMERA_OUTPUT_LCD
-#include <nuttx/nx/nx.h>
-#include <nuttx/nx/nxglib.h>
 #include "camera_bkgd.h"
-#endif
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -69,7 +64,7 @@
 
 struct v_buffer
 {
-  uint32_t *start;
+  FAR uint32_t *start;
   uint32_t length;
 };
 
@@ -82,14 +77,15 @@ typedef struct v_buffer v_buffer_t;
 static int camera_prepare(int fd, enum v4l2_buf_type type,
                           uint32_t buf_mode, uint32_t pixformat,
                           uint16_t hsize, uint16_t vsize,
-                          struct v_buffer **vbuf,
+                          FAR struct v_buffer **vbuf,
                           uint8_t buffernum, int buffersize);
-static void free_buffer(struct v_buffer *buffers, uint8_t bufnum);
-static int parse_arguments(int argc, char *argv[],
-                           int *capture_num, enum v4l2_buf_type *type);
-static int get_camimage(int fd, struct v4l2_buffer *v4l2_buf,
-    enum v4l2_buf_type buf_type);
-static int release_camimage(int fd, struct v4l2_buffer *v4l2_buf);
+static void free_buffer(FAR struct v_buffer *buffers, uint8_t bufnum);
+static int parse_arguments(int argc, FAR char *argv[],
+                           FAR int *capture_num,
+                           FAR enum v4l2_buf_type *type);
+static int get_camimage(int fd, FAR struct v4l2_buffer *v4l2_buf,
+                        enum v4l2_buf_type buf_type);
+static int release_camimage(int fd, FAR struct v4l2_buffer *v4l2_buf);
 static int start_stillcapture(int v_fd, enum v4l2_buf_type capture_type);
 static int stop_stillcapture(int v_fd, enum v4l2_buf_type capture_type);
 
@@ -109,14 +105,14 @@ static int stop_stillcapture(int v_fd, enum v4l2_buf_type capture_type);
  * Name: camera_prepare()
  *
  * Description:
- *   Allocate frame buffer for camera and Queue the allocated buffer
+ *   Allocate frame buffer for camera and queue the allocated buffer
  *   into video driver.
  ****************************************************************************/
 
 static int camera_prepare(int fd, enum v4l2_buf_type type,
                           uint32_t buf_mode, uint32_t pixformat,
                           uint16_t hsize, uint16_t vsize,
-                          struct v_buffer **vbuf,
+                          FAR struct v_buffer **vbuf,
                           uint8_t buffernum, int buffersize)
 {
   int ret;
@@ -136,20 +132,6 @@ static int camera_prepare(int fd, enum v4l2_buf_type type,
     0
   };
 
-  /* VIDIOC_REQBUFS initiate user pointer I/O */
-
-  req.type   = type;
-  req.memory = V4L2_MEMORY_USERPTR;
-  req.count  = buffernum;
-  req.mode   = buf_mode;
-
-  ret = ioctl(fd, VIDIOC_REQBUFS, (unsigned long)&req);
-  if (ret < 0)
-    {
-      printf("Failed to VIDIOC_REQBUFS: errno = %d\n", errno);
-      return ret;
-    }
-
   /* VIDIOC_S_FMT set format */
 
   fmt.type                = type;
@@ -158,17 +140,30 @@ static int camera_prepare(int fd, enum v4l2_buf_type type,
   fmt.fmt.pix.field       = V4L2_FIELD_ANY;
   fmt.fmt.pix.pixelformat = pixformat;
 
-  ret = ioctl(fd, VIDIOC_S_FMT, (unsigned long)&fmt);
+  ret = ioctl(fd, VIDIOC_S_FMT, (uintptr_t)&fmt);
   if (ret < 0)
     {
       printf("Failed to VIDIOC_S_FMT: errno = %d\n", errno);
       return ret;
     }
 
+  /* VIDIOC_REQBUFS initiate user pointer I/O */
+
+  req.type   = type;
+  req.memory = V4L2_MEMORY_USERPTR;
+  req.count  = buffernum;
+  req.mode   = buf_mode;
+
+  ret = ioctl(fd, VIDIOC_REQBUFS, (uintptr_t)&req);
+  if (ret < 0)
+    {
+      printf("Failed to VIDIOC_REQBUFS: errno = %d\n", errno);
+      return ret;
+    }
+
   /* Prepare video memory to store images */
 
   *vbuf = malloc(sizeof(v_buffer_t) * buffernum);
-
   if (!(*vbuf))
     {
       printf("Out of memory for array of v_buffer_t[%d]\n", buffernum);
@@ -184,7 +179,7 @@ static int camera_prepare(int fd, enum v4l2_buf_type type,
        * Buffer pointer must be 32bytes aligned.
        */
 
-      (*vbuf)[cnt].start  = memalign(32, buffersize);
+      (*vbuf)[cnt].start = memalign(32, buffersize);
       if (!(*vbuf)[cnt].start)
         {
           printf("Out of memory for image buffer of %d/%d\n",
@@ -192,9 +187,8 @@ static int camera_prepare(int fd, enum v4l2_buf_type type,
 
           /* Release allocated memory. */
 
-          while (cnt)
+          while (cnt--)
             {
-              cnt--;
               free((*vbuf)[cnt].start);
             }
 
@@ -212,10 +206,10 @@ static int camera_prepare(int fd, enum v4l2_buf_type type,
       buf.type = type;
       buf.memory = V4L2_MEMORY_USERPTR;
       buf.index = cnt;
-      buf.m.userptr = (unsigned long)(*vbuf)[cnt].start;
+      buf.m.userptr = (uintptr_t)(*vbuf)[cnt].start;
       buf.length = (*vbuf)[cnt].length;
 
-      ret = ioctl(fd, VIDIOC_QBUF, (unsigned long)&buf);
+      ret = ioctl(fd, VIDIOC_QBUF, (uintptr_t)&buf);
       if (ret)
         {
           printf("Fail QBUF %d\n", errno);
@@ -227,7 +221,7 @@ static int camera_prepare(int fd, enum v4l2_buf_type type,
 
   /* VIDIOC_STREAMON start stream */
 
-  ret = ioctl(fd, VIDIOC_STREAMON, (unsigned long)&type);
+  ret = ioctl(fd, VIDIOC_STREAMON, (uintptr_t)&type);
   if (ret < 0)
     {
       printf("Failed to VIDIOC_STREAMON: errno = %d\n", errno);
@@ -246,7 +240,7 @@ static int camera_prepare(int fd, enum v4l2_buf_type type,
  *   All free allocated memory of v_buffer.
  ****************************************************************************/
 
-static void free_buffer(struct v_buffer *buffers, uint8_t bufnum)
+static void free_buffer(FAR struct v_buffer *buffers, uint8_t bufnum)
 {
   uint8_t cnt;
   if (buffers)
@@ -270,8 +264,9 @@ static void free_buffer(struct v_buffer *buffers, uint8_t bufnum)
  *   Parse and decode commandline arguments.
  ****************************************************************************/
 
-static int parse_arguments(int argc, char *argv[],
-                           int *capture_num, enum v4l2_buf_type *type)
+static int parse_arguments(int argc, FAR char *argv[],
+                           FAR int *capture_num,
+                           FAR enum v4l2_buf_type *type)
 {
   if (argc == 1)
     {
@@ -288,7 +283,7 @@ static int parse_arguments(int argc, char *argv[],
       else
         {
           *capture_num = atoi(argv[1]);
-          if ((*capture_num < 0) || (*capture_num > MAX_CAPTURE_NUM))
+          if (*capture_num < 0 || *capture_num > MAX_CAPTURE_NUM)
             {
               printf("Invalid capture num(%d). must be >=0 and <=%d\n",
                     *capture_num, MAX_CAPTURE_NUM);
@@ -303,7 +298,7 @@ static int parse_arguments(int argc, char *argv[],
       if (strncmp(argv[1], "-jpg", 5) == 0)
         {
           *capture_num = atoi(argv[2]);
-          if ((*capture_num < 0) || (*capture_num > MAX_CAPTURE_NUM))
+          if (*capture_num < 0 || *capture_num > MAX_CAPTURE_NUM)
             {
               printf("Invalid capture num(%d). must be >=0 and <=%d\n",
                     *capture_num, MAX_CAPTURE_NUM);
@@ -334,8 +329,8 @@ static int parse_arguments(int argc, char *argv[],
  *   DQBUF camera frame buffer from video driver with taken picture data.
  ****************************************************************************/
 
-static int get_camimage(int fd, struct v4l2_buffer *v4l2_buf,
-    enum v4l2_buf_type buf_type)
+static int get_camimage(int fd, FAR struct v4l2_buffer *v4l2_buf,
+                        enum v4l2_buf_type buf_type)
 {
   int ret;
 
@@ -345,7 +340,7 @@ static int get_camimage(int fd, struct v4l2_buffer *v4l2_buf,
   v4l2_buf->type = buf_type;
   v4l2_buf->memory = V4L2_MEMORY_USERPTR;
 
-  ret = ioctl(fd, VIDIOC_DQBUF, (unsigned long)v4l2_buf);
+  ret = ioctl(fd, VIDIOC_DQBUF, (uintptr_t)v4l2_buf);
   if (ret)
     {
       printf("Fail DQBUF %d\n", errno);
@@ -362,13 +357,13 @@ static int get_camimage(int fd, struct v4l2_buffer *v4l2_buf,
  *   Re-QBUF to set used frame buffer into video driver.
  ****************************************************************************/
 
-static int release_camimage(int fd, struct v4l2_buffer *v4l2_buf)
+static int release_camimage(int fd, FAR struct v4l2_buffer *v4l2_buf)
 {
   int ret;
 
   /* VIDIOC_QBUF sets buffer pointer into video driver again. */
 
-  ret = ioctl(fd, VIDIOC_QBUF, (unsigned long)v4l2_buf);
+  ret = ioctl(fd, VIDIOC_QBUF, (uintptr_t)v4l2_buf);
   if (ret)
     {
       printf("Fail QBUF %d\n", errno);
@@ -438,7 +433,7 @@ static FAR const char *get_imgsensor_name(int fd)
 {
   static struct v4l2_capability cap;
 
-  ioctl(fd, VIDIOC_QUERYCAP, (unsigned long)&cap);
+  ioctl(fd, VIDIOC_QUERYCAP, (uintptr_t)&cap);
 
   return (FAR const char *)cap.driver;
 }
@@ -473,8 +468,8 @@ int main(int argc, FAR char *argv[])
   struct timeval delta;
   struct timeval wait;
 
-  struct v_buffer *buffers_video = NULL;
-  struct v_buffer *buffers_still = NULL;
+  FAR struct v_buffer *buffers_video = NULL;
+  FAR struct v_buffer *buffers_still = NULL;
 
   /* =====  Parse and Check arguments  ===== */
 
@@ -636,7 +631,7 @@ int main(int argc, FAR char *argv[])
       wait.tv_usec = 0;
       printf("Take %d pictures as %s file in %s after %d seconds.\n",
              capture_num,
-              (capture_type == V4L2_BUF_TYPE_STILL_CAPTURE) ? "JPEG" : "RGB",
+             capture_type == V4L2_BUF_TYPE_STILL_CAPTURE ? "JPEG" : "RGB",
              save_dir, START_CAPTURE_TIME);
       printf(" After finishing taking pictures,"
              " this app will be finished after %d seconds.\n",
@@ -665,7 +660,7 @@ int main(int argc, FAR char *argv[])
               }
 
 #ifdef CONFIG_EXAMPLES_CAMERA_OUTPUT_LCD
-            nximage_draw((void *)v4l2_buf.m.userptr,
+            nximage_draw((FAR void *)v4l2_buf.m.userptr,
                          VIDEO_HSIZE_QVGA, VIDEO_VSIZE_QVGA);
 #endif
 
@@ -718,9 +713,9 @@ int main(int argc, FAR char *argv[])
                   }
 
                 futil_writeimage(
-                  (uint8_t *)v4l2_buf.m.userptr,
+                  (FAR uint8_t *)v4l2_buf.m.userptr,
                   (size_t)v4l2_buf.bytesused,
-                  (capture_type == V4L2_BUF_TYPE_VIDEO_CAPTURE) ?
+                  capture_type == V4L2_BUF_TYPE_VIDEO_CAPTURE ?
                   "RGB" : "JPG");
 
                 ret = release_camimage(v_fd, &v4l2_buf);
@@ -770,4 +765,3 @@ exit_without_cleaning_videodriver:
 #endif
   return ret;
 }
-

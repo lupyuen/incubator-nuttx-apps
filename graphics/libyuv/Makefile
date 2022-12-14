@@ -1,5 +1,5 @@
 ############################################################################
-# apps/system/nxplayer/Makefile
+# apps/graphics/libyuv/Makefile
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -20,19 +20,25 @@
 
 include $(APPDIR)/Make.defs
 
-# NxPlayer Library
+SRCDIR = libyuv
 
-CSRCS     = nxplayer.c
-CSRCS    += nxplayer_mp3.c
-CSRCS    += nxplayer_pcm.c
+CXXEXT := .cc
+CXXFLAGS += -Wno-shadow
+CXXSRCS = $(wildcard $(SRCDIR)/source/*.cc)
 
-ifneq ($(CONFIG_NXPLAYER_COMMAND_LINE),)
-PROGNAME  = nxplayer
-PRIORITY  = SCHED_PRIORITY_DEFAULT
-STACKSIZE = $(CONFIG_NXPLAYER_MAINTHREAD_STACKSIZE)
-MODULE    = $(CONFIG_NXPLAYER_COMMAND_LINE)
+libyuv.tar.gz:
+	$(Q) curl -L https://chromium.googlesource.com/libyuv/libyuv/+archive/refs/heads/$(CONFIG_LIBYUV_BRANCH).tar.gz -o libyuv.tar.gz
+	$(Q) mkdir -p $(SRCDIR)
+	$(Q) tar zxf libyuv.tar.gz --directory $(SRCDIR)
+	$(Q) patch -p0 < 0001-include-libyuv-fix-strict-prototype-warning.patch
 
-MAINSRC   = nxplayer_main.c
+# Download and unpack tarball if no git repo found
+ifeq ($(wildcard libyuv/libyuv),)
+context:: libyuv.tar.gz
+
+distclean::
+	$(call DELDIR, libyuv)
+	$(call DELFILE, libyuv.tar.gz)
 endif
 
 include $(APPDIR)/Application.mk
