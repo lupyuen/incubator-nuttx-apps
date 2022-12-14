@@ -1,5 +1,5 @@
 ############################################################################
-# apps/system/nxplayer/Makefile
+# apps/interpreters/luamodules/luv/Make.defs
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -18,21 +18,7 @@
 #
 ############################################################################
 
-include $(APPDIR)/Make.defs
+ifneq ($(CONFIG_LUA_LUV_MODULE),)
+CONFIGURED_APPS += $(APPDIR)/interpreters/luamodules/luv
 
-# NxPlayer Library
-
-CSRCS     = nxplayer.c
-CSRCS    += nxplayer_mp3.c
-CSRCS    += nxplayer_pcm.c
-
-ifneq ($(CONFIG_NXPLAYER_COMMAND_LINE),)
-PROGNAME  = nxplayer
-PRIORITY  = SCHED_PRIORITY_DEFAULT
-STACKSIZE = $(CONFIG_NXPLAYER_MAINTHREAD_STACKSIZE)
-MODULE    = $(CONFIG_NXPLAYER_COMMAND_LINE)
-
-MAINSRC   = nxplayer_main.c
 endif
-
-include $(APPDIR)/Application.mk
